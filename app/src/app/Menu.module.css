@@ -56,3 +56,15 @@
     opacity: 0.4;
   }
 }
+.reminder {
+  margin-top: 8px;
+  min-height: 52px;
+  border: 2px solid var(--brick);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--brick) 10%, var(--surface));
+  color: var(--brick);
+  font-weight: 800;
+  font-size: 14px;
+  text-align: left;
+  padding: 8px 12px;
+}

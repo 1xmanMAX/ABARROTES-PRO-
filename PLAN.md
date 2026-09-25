@@ -50,7 +50,8 @@ Chart.js entra en la Fase 5 (Estadísticas), con carga diferida.
 | Análisis económico: equilibrio, Pareto ABC, BCG, GMROI | **Hecha, esperando tu OK** |
 | 4. Consignación: entregar y liquidar | **Hecha, esperando tu OK** |
 | 5. Caja, compras, gastos, estadísticas, inicio | **Hecha, esperando tu OK** |
-| 6. Respaldo, ESC/POS Bluetooth, nube (opcional) | pendiente |
+| 6a. Copia de seguridad cifrada + recordatorio semanal | **Hecha, esperando tu OK** |
+| 6b. ESC/POS Bluetooth, nube (opcional) | pendiente |
 
 ## Ambigüedades y cómo las resolví (Fase 1)
 
@@ -182,7 +183,22 @@ Cada indicador tiene su gráfico y un botón "¿Qué es?" con la explicación si
 7. **Inicio:** agrega efectivo en caja, por cobrar (fiado y deudas de vendedores), mercadería con vendedores, stock bajo y entregas vencidas, además de lo que ya mostraba.
 8. **Más estadísticas** (en Rentabilidad): ventas por hora del día, productos que se compran juntos (lo que usa "Siguiente probable"), deudores principales y rendimiento por vendedor (vendido y devuelto).
 
+## Copia de seguridad (Fase 6a)
+
+1. **Crear copia:**
+   - Pide el código de dueño y arma un archivo `.json` cifrado (AES-GCM 256; clave con PBKDF2-SHA256, 600 000 iteraciones y sal aleatoria) con **todas** las tablas, fotos incluidas.
+   - En el APK se abre el menú Compartir de Android (WhatsApp, Drive, correo). En Chrome se comparte o se descarga.
+2. **Restaurar:**
+   - Se elige el archivo y la app muestra su fecha y contenido (productos, ventas, personas).
+   - Hay que confirmar que se **reemplazan todos los datos**, escribir el código de dueño actual y luego el código con el que se hizo la copia.
+   - Se restaura en una sola transacción y la app se reinicia.
+   - El código de dueño pasa a ser el de la copia.
+   - Si el archivo es de una versión más nueva de la app, lo rechaza.
+3. **Recordatorio semanal:** si hay datos y pasaron más de 7 días (o nunca se hizo), aparece un aviso en el Menú y en Inicio.
+
 ## Propuestas (no implementadas; necesito tu decisión)
+
+- **Clave de la copia más larga:** la spec pide cifrar con el código de dueño, que tiene 4 dígitos (10 000 combinaciones). Dentro de la app hay bloqueo por intentos, pero quien robe el archivo puede probar las combinaciones en su computadora. Las 600 000 iteraciones lo vuelven lento (del orden de horas), no imposible. Propongo una **clave de copia aparte, de 6 o más caracteres**, que se pida solo al crear y restaurar copias. El riesgo es que, si el dueño la olvida, no puede restaurar.
 
 - **"Deshacer" después de cobrar.** La spec dice que anula el ticket y repone el stock. Eso funciona así. Pero si el error fue solo el método de pago (efectivo en vez de Yape), hay que volver a marcar todos los productos. Propongo que "Deshacer" anule la venta **y además devuelva los productos al ticket** para corregir y cobrar de nuevo. La anulación queda registrada igual.
 - **Impresión en Android.** `window.print()` abre el diálogo de impresión de Android. Para una térmica de 58 mm hace falta un servicio de impresión instalado (por ejemplo, el de la marca de la impresora). La impresión directa sin diálogo es ESC/POS por Bluetooth (Fase 6). Si imprimes mucho, conviene adelantar esa parte.

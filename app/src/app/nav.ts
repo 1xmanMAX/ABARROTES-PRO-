@@ -13,6 +13,7 @@ export type Route =
   | { name: 'voucher'; signatureId: string }
   | { name: 'today' }
   | { name: 'cash' }
+  | { name: 'backup' }
   | { name: 'purchase' }
   | { name: 'deliver'; partyId: string }
   | { name: 'settle'; partyId: string }

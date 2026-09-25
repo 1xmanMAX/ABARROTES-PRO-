@@ -6,6 +6,7 @@ import { changePct, productReport, summarize } from '../../domain/profit';
 import { formatTime, lastDayKeys, dayKeyOf, formatDayKey } from '../../domain/time';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { cashBalance } from '../../domain/cash';
+import { backupDue, daysSince } from '../../domain/backup';
 import { isOverdue, pendingValue } from '../../domain/consignment';
 import { formatQty } from '../../domain/qty';
 import { getOpenConsignments } from '../../db/consignments';
@@ -66,6 +67,12 @@ export default function TodayScreen() {
     <div className={s.screen}>
       <ScreenHeader title={t.stats.todayTitle} />
       <div className={s.content}>
+        {backupDue(settings.lastBackupAt, products.length > 0, Date.now()) && (
+          <Button variant="danger" block onClick={() => push({ name: 'backup' })}>
+            {t.menu.backupDue(settings.lastBackupAt ? t.backup.ago(daysSince(settings.lastBackupAt, Date.now())) : t.backup.neverShort)}
+          </Button>
+        )}
+
         <div className={styles.hero}>
           <div className={s.label}>{t.stats.netToday}</div>
           <div className={`${styles.heroValue} ${sum.netProfit < 0 ? styles.negative : ''}`} data-testid="net-today">

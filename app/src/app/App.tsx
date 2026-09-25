@@ -21,6 +21,7 @@ const loaders = {
   today: () => import('../features/stats/TodayScreen'),
   deliver: () => import('../features/consign/DeliverScreen'),
   cash: () => import('../features/cash/CashScreen'),
+  backup: () => import('../features/backup/BackupScreen'),
   purchase: () => import('../features/cash/PurchaseScreen'),
   settle: () => import('../features/consign/SettleScreen'),
   profit: () => import('../features/stats/ProfitScreen'),
@@ -36,6 +37,7 @@ const VoucherScreen = lazy(loaders.voucher);
 const TodayScreen = lazy(loaders.today);
 const DeliverScreen = lazy(loaders.deliver);
 const CashScreen = lazy(loaders.cash);
+const BackupScreen = lazy(loaders.backup);
 const PurchaseScreen = lazy(loaders.purchase);
 const SettleScreen = lazy(loaders.settle);
 const ProfitScreen = lazy(loaders.profit);
@@ -91,6 +93,7 @@ export function App() {
         {route.name === 'today' && <TodayScreen />}
         {route.name === 'deliver' && <DeliverScreen partyId={route.partyId} />}
         {route.name === 'cash' && <CashScreen />}
+        {route.name === 'backup' && <BackupScreen />}
         {route.name === 'purchase' && <PurchaseScreen />}
         {route.name === 'settle' && <SettleScreen partyId={route.partyId} />}
         {route.name === 'profit' && <ProfitScreen />}
