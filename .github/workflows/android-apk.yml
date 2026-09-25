@@ -1,0 +1,73 @@
+name: APK Android
+
+# Compila el APK de Mi Bodega y lo publica en Releases con un enlace fijo:
+# https://github.com/<dueño>/<repo>/releases/download/apk-latest/mi-bodega.apk
+on:
+  push:
+    branches: [main, master, 'claude/**']
+    paths: ['app/**', '.github/workflows/android-apk.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apk
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Tests
+        run: npm test
+
+      - name: Construir la web y copiarla al proyecto Android
+        run: npm run build:android
+
+      - name: Compilar APK
+        working-directory: app/android
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+          VERSION_NAME: 0.2.${{ github.run_number }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/mi-bodega.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mi-bodega-apk
+          path: mi-bodega.apk
+
+      - name: Publicar en Releases (apk-latest)
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete apk-latest --cleanup-tag -y || true
+          gh release create apk-latest mi-bodega.apk \
+            --prerelease \
+            --target "$GITHUB_SHA" \
+            --title "Mi Bodega (APK de prueba) · versión 0.2.${{ github.run_number }}" \
+            --notes "APK generado automáticamente desde ${GITHUB_REF_NAME} (${GITHUB_SHA::7}). Para instalar: descarga mi-bodega.apk en el teléfono, ábrelo y permite instalar apps de esta fuente. Las versiones nuevas se instalan encima sin borrar tus datos."
