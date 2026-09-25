@@ -1,14 +1,17 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createProduct } from '../../db/products';
 import { db, resetDbForTests } from '../../db/schema';
 import { loadOpenTickets } from '../../db/tickets';
-import { useSell } from './sellStore';
+import { flushAllTickets, useSell } from './sellStore';
 
 let n = 0;
 beforeEach(async () => {
   resetDbForTests(`store-${++n}`);
   useSell.setState({ loaded: false, tickets: [], activeId: null });
 });
+
+// Que ningún guardado en segundo plano siga corriendo cuando el siguiente test cambie de BD.
+afterEach(() => flushAllTickets());
 
 const product = () =>
   createProduct(
@@ -70,7 +73,7 @@ describe('sellStore', () => {
     await useSell.getState().checkout({ method: 'digital', digitalRef: null });
     expect(useSell.getState().activeId).toBe(second);
 
-    await new Promise((r) => setTimeout(r, 50));
+    await flushAllTickets();
     const open = await loadOpenTickets();
     expect(open).toHaveLength(1);
     expect(open[0]!.lines[0]!.qty).toBe(2);

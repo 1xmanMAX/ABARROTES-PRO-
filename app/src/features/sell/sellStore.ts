@@ -78,6 +78,13 @@ export async function flushTicket(ticketId: string): Promise<void> {
   }
 }
 
+/** Espera todos los guardados pendientes (se usa en tests y antes de operaciones globales). */
+export async function flushAllTickets(): Promise<void> {
+  const ids = new Set([...dirty, ...running.keys()]);
+  for (const id of ids) await flushTicket(id);
+  await afterSalesJob;
+}
+
 function toOpen(ticket: Ticket, lines: CartLine[]): OpenTicket {
   return { id: ticket.id, label: ticket.label, lines, undo: [] };
 }
@@ -179,8 +186,18 @@ const NO_TICKET: OpenTicket = { ...EMPTY_CART, id: '', label: '' };
 export const activeTicket = (s: SellState): OpenTicket => s.tickets.find((t) => t.id === s.activeId) ?? NO_TICKET;
 export const anyTicketHasLines = (s: SellState): boolean => s.tickets.some((t) => t.lines.length > 0);
 
-/** Después de una venta o anulación: refrescar la predicción y, si empezó un día nuevo, reordenar. */
-export async function afterSalesChange(): Promise<void> {
-  await refreshStats();
-  await recomputeIfNewDay(anyTicketHasLines(useSell.getState()));
+let afterSalesJob: Promise<void> = Promise.resolve();
+
+/**
+ * Después de una venta o anulación: refrescar la predicción y, si empezó un día
+ * nuevo, reordenar. No bloquea al que llama; los errores se registran.
+ */
+export function afterSalesChange(): Promise<void> {
+  afterSalesJob = afterSalesJob
+    .then(async () => {
+      await refreshStats();
+      await recomputeIfNewDay(anyTicketHasLines(useSell.getState()));
+    })
+    .catch((err) => console.error('No se pudo actualizar la predicción', err));
+  return afterSalesJob;
 }
