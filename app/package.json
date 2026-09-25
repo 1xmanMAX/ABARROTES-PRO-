@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "e2e": "playwright test",
     "typecheck": "tsc -b",
-    "build:android": "npm run build && cap sync android"
+    "build:android": "npm run build && cap sync android",
+    "capturas": "CAPTURAS=1 playwright test capturas"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",
