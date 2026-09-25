@@ -438,6 +438,9 @@ export async function voidTicket(ticketId: string, reason: string, ownerPin?: st
       if (ticket.status === 'void') throw new BusinessError('already_void', 'Este ticket ya está anulado.');
       if (ticket.status !== 'paid' && ticket.status !== 'credit')
         throw new BusinessError('not_paid', 'Solo se anulan tickets cobrados.');
+      if (ticket.settlementId) {
+        throw new BusinessError('settlement', 'Es la venta de una liquidación de vendedor: no se anula desde aquí.');
+      }
 
       const lines = await db.ticketLines.where('ticketId').equals(ticketId).toArray();
       for (const l of lines) {

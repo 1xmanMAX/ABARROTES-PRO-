@@ -60,6 +60,8 @@ export interface Ticket extends Timestamps {
   voidedAt: number | null;
   /** Posición de la pestaña entre los tickets abiertos. */
   tabOrder: number;
+  /** Venta generada por una liquidación de consignación (no se anula desde Historial). */
+  settlementId?: string | null;
 }
 
 export interface TicketLine {
@@ -215,4 +217,59 @@ export interface Signature {
   refType: string;
   refId: string;
   createdAt: number;
+}
+
+export interface Consignment {
+  id: string;
+  partyId: string;
+  partyName: string;
+  status: 'open' | 'settled' | 'void';
+  /** Fecha prevista de liquidación. */
+  dueDate: number;
+  deliveredValue: Cents;
+  signatureId: string;
+  createdAt: number;
+  updatedAt: number;
+  settledAt: number | null;
+}
+
+export interface ConsignmentLine {
+  id: string;
+  consignmentId: string;
+  productId: string;
+  productName: string;
+  fractional: boolean;
+  qtyDelivered: Qty;
+  /** Acumulado. */
+  qtyReturned: Qty;
+  /** Acumulado. */
+  qtySold: Qty;
+  agreedPrice: Cents;
+  /** Costo al momento de entregar. */
+  unitCost: Cents;
+}
+
+export interface Settlement {
+  id: string;
+  partyId: string;
+  consignmentIds: string[];
+  soldValue: Cents;
+  previousBalance: Cents;
+  paidNow: Cents;
+  method: 'cash' | 'digital';
+  newBalance: Cents;
+  signatureId: string;
+  ticketId: string | null;
+  createdAt: number;
+}
+
+export interface SettlementLine {
+  id: string;
+  settlementId: string;
+  consignmentLineId: string;
+  productId: string;
+  qtyReturned: Qty;
+  qtySold: Qty;
+  agreedPrice: Cents;
+  lineTotal: Cents;
 }

@@ -112,3 +112,10 @@
   font-size: 34px;
   text-align: center;
 }
+.overdueTag {
+  color: var(--brick);
+  font-weight: 700;
+  border: 1.5px solid currentColor;
+  border-radius: 6px;
+  padding: 0 6px;
+}

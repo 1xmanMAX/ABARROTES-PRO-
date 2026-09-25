@@ -3,10 +3,14 @@ import { replayStats, type PairStat, type ProductStat } from '../domain/stats';
 import type {
   AuditEntry,
   CashMovement,
+  Consignment,
+  ConsignmentLine,
   LedgerEntry,
   Party,
   Product,
   Settings,
+  Settlement,
+  SettlementLine,
   Signature,
   StockMovement,
   Ticket,
@@ -26,6 +30,10 @@ export class BodegaDB extends Dexie {
   parties!: EntityTable<Party, 'id'>;
   ledgerEntries!: EntityTable<LedgerEntry, 'id'>;
   signatures!: EntityTable<Signature, 'id'>;
+  consignments!: EntityTable<Consignment, 'id'>;
+  consignmentLines!: EntityTable<ConsignmentLine, 'id'>;
+  settlements!: EntityTable<Settlement, 'id'>;
+  settlementLines!: EntityTable<SettlementLine, 'id'>;
 
   constructor(name = 'mi-bodega') {
     super(name);
@@ -53,6 +61,13 @@ export class BodegaDB extends Dexie {
       ledgerEntries: 'id, partyId, createdAt, [sourceType+sourceId]',
       signatures: 'id, partyId, &operationCode, createdAt, [refType+refId]',
       auditLog: 'id, entity, entityId, action, createdAt',
+    });
+    // Fase 4: consignación (entregas a vendedores y liquidaciones).
+    this.version(4).stores({
+      consignments: 'id, partyId, status, dueDate, createdAt',
+      consignmentLines: 'id, consignmentId, productId',
+      settlements: 'id, partyId, createdAt',
+      settlementLines: 'id, settlementId, consignmentLineId, productId',
     });
   }
 }

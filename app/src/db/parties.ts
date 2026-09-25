@@ -142,9 +142,10 @@ export interface HistoryItem {
 
 /** Historial cronológico: cuenta corriente y eventos del código. */
 export async function getPartyHistory(partyId: string): Promise<HistoryItem[]> {
-  const [entries, audit] = await Promise.all([
+  const [entries, audit, receipts] = await Promise.all([
     db.ledgerEntries.where('partyId').equals(partyId).toArray(),
     db.auditLog.where('entityId').equals(partyId).toArray(),
+    db.signatures.where('partyId').equals(partyId).filter((sg) => sg.purpose === 'consignment_receipt').toArray(),
   ]);
   const items: HistoryItem[] = [
     ...entries.map((e) => ({
@@ -163,6 +164,16 @@ export async function getPartyHistory(partyId: string): Promise<HistoryItem[]> {
       label: a.detail,
       amount: null,
       signatureId: null,
+      voided: false,
+    })),
+    // Entregas de mercadería: no son deuda, pero quedan en el historial con su comprobante.
+    ...receipts.map((sg) => ({
+      id: sg.id,
+      at: sg.createdAt,
+      kind: 'event' as const,
+      label: 'Recibió mercadería',
+      amount: sg.amount,
+      signatureId: sg.id,
       voided: false,
     })),
   ];

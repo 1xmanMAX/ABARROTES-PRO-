@@ -1,0 +1,171 @@
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.itemOn {
+  border: 2px solid var(--gold);
+}
+.itemInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.itemName {
+  font-weight: 700;
+  font-size: 14px;
+}
+.priceBtn {
+  align-self: flex-start;
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: underline dotted;
+  min-height: 28px;
+}
+.stepper {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius-md);
+  background: var(--paper);
+  flex-shrink: 0;
+}
+.stepper button {
+  width: var(--tap-min);
+  height: var(--tap-min);
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  font-weight: 700;
+}
+.stepper button:disabled {
+  opacity: 0.3;
+}
+.stepper .qty {
+  width: auto;
+  min-width: 42px;
+  font-family: var(--font-mono);
+  font-size: 16px;
+}
+.bar {
+  background: var(--cover);
+  border-top: 3px solid var(--gold);
+  padding: 12px 14px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.barLabel {
+  font-size: 12px;
+  color: var(--cover-soft);
+}
+.barTotal {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--gold);
+}
+.display {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 32px;
+  text-align: center;
+}
+.warn {
+  color: var(--brick);
+  font-weight: 700;
+  margin: 0;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.table th {
+  font-size: 11px;
+  color: var(--ink-soft);
+  text-align: right;
+  padding: 4px 2px;
+}
+.table th:first-child,
+.table td:first-child {
+  text-align: left;
+  white-space: normal;
+}
+.table td {
+  white-space: nowrap;
+  text-align: right;
+  padding: 6px 2px;
+  border-bottom: 1px dashed var(--paper-line);
+  vertical-align: middle;
+}
+.miniStepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.miniStepper button {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--paper-line);
+  background: var(--paper);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 16px;
+}
+.miniStepper button:disabled {
+  opacity: 0.3;
+}
+.miniStepper span {
+  min-width: 26px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  padding: 3px 0;
+}
+.summaryTotal {
+  font-weight: 800;
+  font-size: 17px;
+  border-top: 1px dashed var(--paper-line);
+  padding-top: 6px;
+}
+.delivery {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+.overdue {
+  color: var(--brick);
+  font-weight: 700;
+  font-size: 12px;
+  border: 1.5px solid currentColor;
+  border-radius: 6px;
+  padding: 1px 6px;
+}

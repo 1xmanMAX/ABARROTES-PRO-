@@ -102,12 +102,7 @@ export function ReceiptPrinter() {
 }
 
 function VoucherPrint({ signature: sig, width, shopName }: { signature: Signature; width: number; shopName: string }) {
-  const stamp = stampFor(
-    sig.purpose,
-    sig.purpose === 'settlement'
-      ? sig.previousBalance + sig.lines.reduce((a, l) => a + l.amount, 0) - sig.newBalance
-      : sig.amount,
-  );
+  const stamp = stampFor(sig.purpose, sig.amount);
   return (
     <div className={styles.receipt} style={{ width: `${width}mm` }} data-testid="voucher-print">
       <div className={styles.center}>
@@ -132,18 +127,22 @@ function VoucherPrint({ signature: sig, width, shopName }: { signature: Signatur
           <span>{formatPEN(l.amount)}</span>
         </div>
       ))}
-      <div className={styles.split}>
-        <span>{t.voucher.before}</span>
-        <span>{formatPEN(sig.previousBalance)}</span>
-      </div>
+      {sig.purpose !== 'consignment_receipt' && (
+        <div className={styles.split}>
+          <span>{t.voucher.before}</span>
+          <span>{formatPEN(sig.previousBalance)}</span>
+        </div>
+      )}
       <div className={`${styles.split} ${styles.total}`}>
         <span>{t.voucher.amount}</span>
         <span>{formatPEN(sig.amount)}</span>
       </div>
-      <div className={styles.split}>
-        <span>{t.voucher.after}</span>
-        <span>{formatPEN(sig.newBalance)}</span>
-      </div>
+      {sig.purpose !== 'consignment_receipt' && (
+        <div className={styles.split}>
+          <span>{t.voucher.after}</span>
+          <span>{formatPEN(sig.newBalance)}</span>
+        </div>
+      )}
       <div className={styles.rule} />
       <div className={styles.split}>
         <span>{t.voucher.signedBy}</span>

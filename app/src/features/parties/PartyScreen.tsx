@@ -5,6 +5,9 @@ import { formatPEN } from '../../domain/money';
 import { pinStatus } from '../../domain/pin';
 import { formatDateTime } from '../../domain/time';
 import { getPartyHistory } from '../../db/parties';
+import { getOpenConsignments } from '../../db/consignments';
+import { isOverdue, pendingValue } from '../../domain/consignment';
+import { dayKeyOf, formatDayKey } from '../../domain/time';
 import { setPartyPin, unlockPartyPin } from '../../db/pins';
 import { db } from '../../db/schema';
 import type { Party } from '../../db/types';
@@ -29,6 +32,9 @@ export default function PartyScreen({ id }: { id: string }) {
 function PartyDetail({ party }: { party: Party }) {
   const push = useNav((st) => st.push);
   const history = useLiveQuery(() => getPartyHistory(party.id), [party.id, party.updatedAt, party.balance]) ?? [];
+  const open = useLiveQuery(() => getOpenConsignments(party.id), [party.id, party.updatedAt]) ?? [];
+  const seller = party.roles.includes('seller');
+  const inHands = open.reduce((a, o) => a + pendingValue(o.lines), 0);
   const [askOwner, ownerSheet] = useOwnerPin();
   const [paying, setPaying] = useState(false);
   // null: cerrado; string: crear código (con el código de dueño verificado si ya tenía uno)
@@ -59,6 +65,24 @@ function PartyDetail({ party }: { party: Party }) {
           </div>
         </div>
 
+        {seller && (
+          <div className={s.card}>
+            <div className={s.label}>{t.consign.inHands}</div>
+            <div className={styles.balance} data-testid="in-hands">
+              {formatPEN(inHands)}
+            </div>
+            {open.map((o) => (
+              <div key={o.consignment.id} className={styles.meta} style={{ marginTop: 6 }}>
+                <span>
+                  {t.consign.deliveryOf(formatDayKey(dayKeyOf(o.consignment.createdAt)), formatPEN(pendingValue(o.lines)))}
+                </span>
+                <span>· {t.consign.due(formatDayKey(dayKeyOf(o.consignment.dueDate)))}</span>
+                {isOverdue(o.consignment.dueDate, Date.now()) && <span className={styles.overdueTag}>{t.consign.overdue}</span>}
+              </div>
+            ))}
+          </div>
+        )}
+
         {!party.pin && <p className={styles.warn}>{t.parties.noPinWarn}</p>}
         {locked && <p className={styles.warn}>{t.parties.lockedWarn}</p>}
 
@@ -66,6 +90,16 @@ function PartyDetail({ party }: { party: Party }) {
           {party.balance > 0 && party.pin && !locked && (
             <Button variant="primary" onClick={() => setPaying(true)} style={{ gridColumn: '1 / -1' }}>
               {t.parties.collect}
+            </Button>
+          )}
+          {seller && party.pin && !locked && (
+            <Button variant={open.length ? 'outline' : 'primary'} onClick={() => push({ name: 'deliver', partyId: party.id })}>
+              {t.consign.deliver}
+            </Button>
+          )}
+          {seller && open.length > 0 && party.pin && !locked && (
+            <Button variant="primary" onClick={() => push({ name: 'settle', partyId: party.id })}>
+              {t.consign.settle}
             </Button>
           )}
           {!party.pin ? (

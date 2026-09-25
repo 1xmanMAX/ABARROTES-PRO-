@@ -25,10 +25,7 @@ export default function VoucherScreen({ signatureId }: { signatureId: string }) 
   }, [signatureId]);
   if (!data) return null;
   const { sig, party, intact } = data;
-  const paid =
-    sig.purpose === 'settlement'
-      ? sig.previousBalance + sig.lines.reduce((a, l) => a + l.amount, 0) - sig.newBalance
-      : sig.amount;
+  const paid = sig.amount;
   const stamp = stampFor(sig.purpose, paid);
   const stampClass = stamp === 'PAGADO' ? styles.stampPaid : stamp === 'FIADO' ? styles.stampCredit : styles.stampReceived;
   const phone = whatsappNumber(party?.phone);
@@ -61,9 +58,9 @@ export default function VoucherScreen({ signatureId }: { signatureId: string }) 
             {sig.lines.map((l, i) => (
               <Row key={i} label={`${l.name} ×${l.qty}`} value={formatPEN(l.amount)} />
             ))}
-            <Row label={t.voucher.before} value={formatPEN(sig.previousBalance)} />
+            {sig.purpose !== 'consignment_receipt' && <Row label={t.voucher.before} value={formatPEN(sig.previousBalance)} />}
             <Row label={t.voucher.amount} value={formatPEN(sig.amount)} big />
-            <Row label={t.voucher.after} value={formatPEN(sig.newBalance)} strong />
+            {sig.purpose !== 'consignment_receipt' && <Row label={t.voucher.after} value={formatPEN(sig.newBalance)} strong />}
           </div>
           <div className={`${styles.stamp} ${stampClass}`} aria-label={t.voucher.stamps[stamp]}>
             <span className={styles.stampWord}>{t.voucher.stamps[stamp]}</span>

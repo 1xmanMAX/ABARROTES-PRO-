@@ -4,6 +4,8 @@ import { useNav } from '../../app/nav';
 import { normalize } from '../../domain/gridOrder';
 import { formatPEN } from '../../domain/money';
 import { db } from '../../db/schema';
+import { getOpenConsignments } from '../../db/consignments';
+import { pendingValue } from '../../domain/consignment';
 import type { Party } from '../../db/types';
 import { t } from '../../i18n/es-PE';
 import { Button } from '../../ui/Button';
@@ -31,6 +33,12 @@ export function PartyBadges({ party }: { party: Party }) {
 
 export default function PartiesScreen() {
   const parties = useParties();
+  const inHands = useLiveQuery(async () => {
+    const m = new Map<string, number>();
+    for (const o of await getOpenConsignments())
+      m.set(o.consignment.partyId, (m.get(o.consignment.partyId) ?? 0) + pendingValue(o.lines));
+    return m;
+  }, []);
   const push = useNav((st) => st.push);
   const [q, setQ] = useState('');
   const list = useMemo(
@@ -59,6 +67,7 @@ export default function PartiesScreen() {
               <span className={styles.name}>{p.name}</span>
               <span className={styles.meta}>
                 <PartyBadges party={p} />
+                {(inHands?.get(p.id) ?? 0) > 0 && <span>{t.consign.merch(formatPEN(inHands!.get(p.id)!))}</span>}
               </span>
             </span>
             {p.balance > 0 ? (

@@ -48,7 +48,7 @@ Chart.js entra en la Fase 5 (Estadísticas), con carga diferida.
 | 3. Clientes/vendedores, código personal, fiado, cobro de deudas, comprobante | **Hecha, esperando tu OK** |
 | Ganancias de hoy y rentabilidad (parte de la Fase 5) | **Hecha, esperando tu OK** |
 | Análisis económico: equilibrio, Pareto ABC, BCG, GMROI | **Hecha, esperando tu OK** |
-| 4. Consignación: entregar y liquidar | pendiente |
+| 4. Consignación: entregar y liquidar | **Hecha, esperando tu OK** |
 | 5. Caja, compras, gastos, estadísticas, inicio | pendiente |
 | 6. Respaldo, ESC/POS Bluetooth, nube (opcional) | pendiente |
 
@@ -152,6 +152,24 @@ Cada indicador tiene su gráfico y un botón "¿Qué es?" con la explicación si
    - **Aproximación:** se usa el stock actual en lugar del stock promedio, porque la app todavía no guarda el stock de cada día.
    - Tabla por producto y resumen del negocio.
 5. **En la lista de productos**, cada producto muestra su clase ABC y su cuadrante BCG. Al tocarlo se ven también el GMROI y la rotación.
+
+## Ambigüedades y cómo las resolví (Fase 4)
+
+1. **Entregar:** se eligen productos con + y − o tocando la cantidad. No hay que ir a la cuadrícula de Vender, porque en una entrega se llevan cantidades grandes de pocos productos. Solo se puede entregar lo que está libre: el stock menos lo que ya está en tickets abiertos.
+2. **Precio pactado:**
+   - Por defecto es el último precio pactado con ese vendedor; si no hay, el "precio para vendedores" del producto; si no hay, el precio de venta. Se cambia tocando el precio.
+   - **Cada entrega recuerda el precio pactado** para la próxima. Esto no está en la spec; si prefieres que no lo recuerde, lo quito.
+3. **Fecha de liquidación:** Mañana, en 3 días (por defecto) o en 7 días. Las vencidas se marcan en la ficha del vendedor.
+4. **Liquidar** cierra todo lo pendiente de las entregas elegidas: lo que no se devuelve cuenta como vendido. No quedan entregas "a medias".
+5. **La venta del vendedor:**
+   - Se registra como una venta al fiado a su nombre ("Liquidación · Juan"), con el precio pactado y el costo que tenía el producto al entregarlo.
+   - Cuenta en ganancias, rentabilidad y predicción.
+   - No se anula desde Historial, porque devolvería stock que ya se contó.
+6. **Comprobante:**
+   - En la liquidación, "Debía" es el total a pagar (lo vendido más la deuda anterior), "Monto" es lo que paga y "Saldo pendiente" lo que queda, como en el mockup.
+   - El sello dice PAGADO si pagó algo y FIADO si no pagó nada.
+   - La entrega tiene sello RECIBIDO y no muestra saldos, porque no genera deuda.
+7. **Historial de la persona:** incluye las entregas ("Recibió mercadería") con su comprobante.
 
 ## Propuestas (no implementadas; necesito tu decisión)
 
