@@ -38,6 +38,8 @@ export async function seedDemoProducts(): Promise<number> {
       photo: null,
       pinnedPosition: null,
       active: true,
+      // Sacos y aceite: productos donde el cliente suele regatear.
+      allowsHaggle: unit === 'saco' || baseName === 'Aceite',
     };
     await createProduct(input, stock);
   }

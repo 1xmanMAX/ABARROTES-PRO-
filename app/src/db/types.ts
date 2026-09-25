@@ -26,6 +26,8 @@ export interface Product extends Timestamps {
   tileColor: number;
   pinnedPosition: number | null;
   active: boolean;
+  /** Admite rebaja por regateo al cobrar. */
+  allowsHaggle?: boolean;
 }
 
 export type TicketStatus = 'open' | 'paid' | 'credit' | 'void';
@@ -40,7 +42,10 @@ export interface Ticket extends Timestamps {
   paymentMethod: PaymentMethod | null;
   partyId: string | null;
   subtotal: Cents;
+  /** Descuento total: cambios de precio por línea + rebaja por regateo. */
   discount: Cents;
+  /** Rebaja por regateo (parte de `discount`). */
+  haggle?: Cents;
   total: Cents;
   cashReceived: Cents | null;
   change: Cents | null;
@@ -70,8 +75,11 @@ export interface TicketLine {
   fractional: boolean;
   unitPrice: Cents;
   unitCost: Cents;
+  /** Total neto de la línea (ya descontada su parte de la rebaja). */
   lineTotal: Cents;
   lineProfit: Cents;
+  /** Parte de la rebaja por regateo que le tocó a esta línea. */
+  lineDiscount?: Cents;
 }
 
 export type StockReason = 'sale' | 'sale_void' | 'purchase' | 'consign_out' | 'consign_return' | 'adjustment';
@@ -131,6 +139,8 @@ export interface Settings {
   gridOrder: string[];
   gridOrderComputedAt: number | null;
   openingCash: Cents;
+  /** Rebaja máxima por regateo por ticket. */
+  maxHaggle: Cents;
   theme: ThemePref;
   lastBackupAt: number | null;
 }

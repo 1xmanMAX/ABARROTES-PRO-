@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useOrderedSellProducts, useProductMap, useProducts } from '../../app/data';
+import { useOrderedSellProducts, useProductMap, useProducts, useSettings } from '../../app/data';
 import { Menu } from '../../app/Menu';
 import { useNav } from '../../app/nav';
 import { cartItemCount, cartTotal, reservedByProduct } from '../../domain/cart';
@@ -46,6 +46,7 @@ export function SellScreen() {
   const productMap = useProductMap(products);
   const gridProducts = useOrderedSellProducts(products);
   const push = useNav((s) => s.push);
+  const settings = useSettings();
   const [overlay, setOverlay] = useState<Overlay>({ kind: 'none' });
   const close = useCallback(() => setOverlay({ kind: 'none' }), []);
 
@@ -219,6 +220,7 @@ export function SellScreen() {
       {editProduct && (
         <LineEditSheet
           product={editProduct}
+          maxUnitDiscount={settings.maxHaggle}
           line={active.lines.find((l) => l.productId === editProduct.id)}
           maxQty={available(editProduct) + (qtyInActive.get(editProduct.id) ?? 0)}
           onSave={(qty, price) => {

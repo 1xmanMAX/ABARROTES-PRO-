@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
-import { useProductMap, useProducts } from '../../app/data';
+import { useProductMap, useProducts, useSettings } from '../../app/data';
+import { haggleOptions } from '../../domain/haggle';
+import { lineAmount } from '../../domain/qty';
 import { useNav } from '../../app/nav';
 import { cartTotal } from '../../domain/cart';
 import { billSuggestions, computeChange, formatPEN, parseSolesToCents, type Cents } from '../../domain/money';
@@ -24,7 +26,21 @@ export function CheckoutScreen() {
   const ticket = useSell(activeTicket);
   const checkout = useSell((st) => st.checkout);
   const back = useNav((st) => st.back);
-  const total = useMemo(() => cartTotal(ticket.lines, productMap), [ticket.lines, productMap]);
+  const settings = useSettings();
+  const gross = useMemo(() => cartTotal(ticket.lines, productMap), [ticket.lines, productMap]);
+  // Rebaja por regateo: solo sobre productos que la admiten.
+  const eligibleTotal = useMemo(
+    () =>
+      ticket.lines.reduce((a, l) => {
+        const p = productMap.get(l.productId);
+        return p?.allowsHaggle ? a + lineAmount(p, l.qty, l.priceOverride ?? p.salePrice) : a;
+      }, 0),
+    [ticket.lines, productMap],
+  );
+  const haggleChoices = haggleOptions(settings.maxHaggle, eligibleTotal);
+  const [haggle, setHaggle] = useState(0);
+  const effectiveHaggle = haggleChoices.includes(haggle) ? haggle : 0;
+  const total = gross - effectiveHaggle;
 
   const [method, setMethod] = useState<Method>('cash');
   // null = Exacto (por defecto: 5 toques para una venta típica).
@@ -38,19 +54,13 @@ export function CheckoutScreen() {
   const change = computeChange(total, cashReceived);
   const canPay = total > 0 && (method !== 'cash' || change >= 0) && !busy;
 
-  const summary = ticket.lines
-    .map((l) => {
-      const p = productMap.get(l.productId);
-      return p ? `${p.name} ×${formatQty(p, l.qty)}` : '';
-    })
-    .filter(Boolean)
-    .join(' · ');
-
   const pay = async (print: boolean) => {
     if (!canPay) return;
     setBusy(true);
     const payment: Payment =
-      method === 'cash' ? { method: 'cash', cashReceived } : { method: 'digital', digitalRef: digitalRef || null };
+      method === 'cash'
+        ? { method: 'cash', cashReceived, haggle: effectiveHaggle }
+        : { method: 'digital', digitalRef: digitalRef || null, haggle: effectiveHaggle };
     try {
       const closed = await checkout(payment);
       vibrate(30);
@@ -94,8 +104,56 @@ export function CheckoutScreen() {
           <div className={styles.total} data-testid="checkout-total">
             {formatPEN(total)}
           </div>
-          <div className={styles.summary}>{summary}</div>
+          {effectiveHaggle > 0 && (
+            <div className={styles.haggleNote}>
+              {formatPEN(gross)} − {t.checkout.haggle} {formatPEN(effectiveHaggle)}
+            </div>
+          )}
         </div>
+
+        {/* Lista para leerle al cliente: evita cobrar de menos con apuro. */}
+        <ul className={styles.lines} aria-label={t.checkout.itemsTitle}>
+          {ticket.lines.map((l) => {
+            const p = productMap.get(l.productId);
+            if (!p) return null;
+            const price = l.priceOverride ?? p.salePrice;
+            return (
+              <li key={l.productId} className={styles.lineRow}>
+                <span className={styles.lineQty}>{formatQty(p, l.qty)}</span>
+                <span className={styles.lineName}>
+                  {p.name}
+                  {l.priceOverride !== null && <small> · {formatPEN(price)} c/u</small>}
+                </span>
+                <span className="mono">{formatPEN(lineAmount(p, l.qty, price))}</span>
+              </li>
+            );
+          })}
+        </ul>
+
+        {haggleChoices.length > 0 && (
+          <div>
+            <div className={s.label} style={{ marginBottom: 6 }}>
+              {t.checkout.haggleTitle}
+            </div>
+            <div className={styles.haggleRow} role="group" aria-label={t.checkout.haggleTitle}>
+              {haggleChoices.map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  className={effectiveHaggle === v ? styles.haggleActive : styles.haggleBtn}
+                  aria-pressed={effectiveHaggle === v}
+                  aria-label={`${t.checkout.haggle} ${formatPEN(v)}`}
+                  onClick={() => {
+                    setHaggle(effectiveHaggle === v ? 0 : v);
+                    setReceived(null);
+                  }}
+                >
+                  −{v / 100}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className={s.segment} role="group" aria-label="Método de pago">
           <button type="button" aria-pressed={method === 'cash'} onClick={() => setMethod('cash')}>

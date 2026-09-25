@@ -136,4 +136,27 @@ describe('tickets', () => {
     const moves = await db.stockMovements.where('productId').equals(arroz).toArray();
     expect(moves.map((m) => m.delta).sort()).toEqual([-2, 5]);
   });
+
+  it('rebaja por regateo: se reparte, respeta el máximo y solo en productos que la admiten', async () => {
+    const arroz = await createProduct({ ...base, allowsHaggle: true }, 10);
+    const sal = await createProduct({ ...base, name: 'Sal', salePrice: 3500, costPrice: 2800 }, 10);
+    const t = await openTicket();
+    await saveOpenTicketLines(t.id, [line(arroz, 2), line(sal, 1)]);
+    await expect(checkoutTicket(t.id, { method: 'cash', cashReceived: 100000, haggle: 600 })).rejects.toThrow('máxima');
+
+    const closed = await checkoutTicket(t.id, { method: 'cash', cashReceived: 50000, haggle: 300 });
+    expect(closed.total).toBe(37000 + 3500 - 300);
+    expect(closed.haggle).toBe(300);
+    expect(closed.change).toBe(50000 - closed.total);
+    const lines = await db.ticketLines.where('ticketId').equals(t.id).toArray();
+    const la = lines.find((l) => l.productId === arroz)!;
+    expect(la).toMatchObject({ lineDiscount: 300, lineTotal: 36700, lineProfit: 36700 - 33000 });
+    expect(lines.find((l) => l.productId === sal)!.lineDiscount).toBe(0);
+    const cash = await db.cashMovements.toArray();
+    expect(cash[0]!.amount).toBe(closed.total);
+
+    const t2 = await openTicket();
+    await saveOpenTicketLines(t2.id, [line(sal, 1)]);
+    await expect(checkoutTicket(t2.id, { method: 'cash', cashReceived: 5000, haggle: 100 })).rejects.toThrow('admite');
+  });
 });

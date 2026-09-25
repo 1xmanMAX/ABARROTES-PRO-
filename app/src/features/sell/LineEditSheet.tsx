@@ -13,6 +13,8 @@ import styles from './Sell.module.css';
 
 interface Props {
   product: Product;
+  /** Rebaja por unidad a partir de la cual se pide confirmar. */
+  maxUnitDiscount: number;
   line: CartLine | undefined;
   /** Disponible sumando lo que ya lleva esta línea. */
   maxQty: number;
@@ -21,7 +23,7 @@ interface Props {
 }
 
 /** Toque largo en un tile: cantidad exacta y precio de la línea (descuento). */
-export function LineEditSheet({ product, line, maxQty, onSave, onClose }: Props) {
+export function LineEditSheet({ product, maxUnitDiscount, line, maxQty, onSave, onClose }: Props) {
   const [field, setField] = useState<'qty' | 'price'>('qty');
   const [qtyText, setQtyText] = useState(line ? formatQty(product, line.qty) : '');
   const [priceText, setPriceText] = useState(centsToInput(line?.priceOverride ?? product.salePrice));
@@ -30,11 +32,26 @@ export function LineEditSheet({ product, line, maxQty, onSave, onClose }: Props)
   const price = parseSolesToCents(priceText);
   const valid = qty !== null && price !== null && qty <= maxQty;
   const total = valid ? lineAmount(product, qty, price) : 0;
+  // Protección contra errores con apuro: precio bajo costo o rebaja grande piden un segundo toque.
+  const [confirmed, setConfirmed] = useState<number | null>(null);
+  const warning =
+    price === null
+      ? null
+      : price < product.costPrice
+        ? t.sell.belowCost(formatPEN(product.costPrice))
+        : product.salePrice - price > maxUnitDiscount
+          ? t.sell.bigDiscount(formatPEN(product.salePrice - price))
+          : null;
+  const needsConfirm = warning !== null && confirmed !== price;
 
   const save = () => {
     if (qty === null) return toast(t.errors.invalidQty, 'error');
     if (qty > maxQty) return toast(t.sell.onlyLeft(formatQty(product, maxQty)), 'error');
     if (price === null) return toast(t.errors.invalidAmount, 'error');
+    if (needsConfirm) {
+      setConfirmed(price);
+      return;
+    }
     onSave(qty, price === product.salePrice ? null : price);
   };
 
@@ -43,7 +60,7 @@ export function LineEditSheet({ product, line, maxQty, onSave, onClose }: Props)
       title={product.name}
       onClose={onClose}
       footer={
-        <Button variant="primary" block disabled={!valid} onClick={save}>
+        <Button variant={warning ? 'danger' : 'primary'} block disabled={!valid} onClick={save}>
           {t.common.accept} · {formatPEN(total)}
         </Button>
       }
@@ -68,6 +85,7 @@ export function LineEditSheet({ product, line, maxQty, onSave, onClose }: Props)
           <span className="mono">S/ {priceText || '0'}</span>
         </button>
       </div>
+      {warning && <p className={styles.warn}>{warning}</p>}
       {qty !== null && qty > maxQty && <p className={styles.warn}>{t.sell.onlyLeft(formatQty(product, maxQty))}</p>}
       {field === 'price' && (
         <p className={s.muted}>

@@ -29,6 +29,7 @@ interface Form {
   initialStock: string;
   minStock: string;
   allowsFraction: boolean;
+  allowsHaggle: boolean;
   pinnedPosition: string;
   active: boolean;
   photo: Blob | null;
@@ -46,6 +47,7 @@ function toForm(p: Product | undefined): Form {
     initialStock: '',
     minStock: p ? formatQty(p, p.minStock) : '0',
     allowsFraction: p?.allowsFraction ?? false,
+    allowsHaggle: p?.allowsHaggle ?? false,
     pinnedPosition: p?.pinnedPosition != null ? String(p.pinnedPosition) : '',
     active: p?.active ?? true,
     photo: p?.photo ?? null,
@@ -93,6 +95,7 @@ function ProductForm({ product }: { product: Product | undefined }) {
       baseName: f.baseName,
       unit: f.unit,
       allowsFraction: f.allowsFraction,
+      allowsHaggle: f.allowsHaggle,
       category: f.category.trim(),
       salePrice: sale,
       costPrice: cost,
@@ -273,6 +276,10 @@ function ProductForm({ product }: { product: Product | undefined }) {
             onChange={(e) => set('allowsFraction', e.target.checked)}
           />
           {t.inventory.fields.allowsFraction}
+        </label>
+        <label className={s.check}>
+          <input type="checkbox" checked={f.allowsHaggle} onChange={(e) => set('allowsHaggle', e.target.checked)} />
+          {t.inventory.fields.allowsHaggle}
         </label>
         <label className={s.check}>
           <input type="checkbox" checked={f.active} onChange={(e) => set('active', e.target.checked)} />

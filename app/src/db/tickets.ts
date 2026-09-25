@@ -1,10 +1,12 @@
 import type { CartLine } from '../domain/cart';
-import { assertCents, type Cents } from '../domain/money';
+import { distributeDiscount } from '../domain/haggle';
+import { assertCents, formatPEN, type Cents } from '../domain/money';
 import { lineAmount } from '../domain/qty';
 import { dayKeyOf } from '../domain/time';
 import { BusinessError } from './errors';
 import { newId } from './ids';
 import { db } from './schema';
+import { getSettings } from './settings';
 import { applyTicketStats } from './stats';
 import type { Ticket, TicketLine } from './types';
 
@@ -130,7 +132,9 @@ export async function discardEmptyTicket(ticketId: string): Promise<void> {
   });
 }
 
-export type Payment = { method: 'cash'; cashReceived: Cents } | { method: 'digital'; digitalRef: string | null };
+export type Payment =
+  | { method: 'cash'; cashReceived: Cents; haggle?: Cents }
+  | { method: 'digital'; digitalRef: string | null; haggle?: Cents };
 
 /**
  * Cobra un ticket abierto en una sola transacción: snapshots de líneas,
@@ -143,11 +147,16 @@ export async function checkoutTicket(ticketId: string, payment: Payment, now = D
 
   return db.transaction(
     'rw',
-    [db.tickets, db.ticketLines, db.products, db.stockMovements, db.cashMovements, db.productStats, db.pairStats],
+    [db.tickets, db.ticketLines, db.products, db.stockMovements, db.cashMovements, db.productStats, db.pairStats, db.settings],
     async () => {
       const ticket = await db.tickets.get(ticketId);
       if (!ticket) throw new BusinessError('not_found', 'Ticket no encontrado.');
       if (ticket.status !== 'open') throw new BusinessError('not_open', 'Este ticket ya fue cobrado.');
+      const haggle = payment.haggle ?? 0;
+      const maxHaggle = (await getSettings()).maxHaggle;
+      if (!Number.isSafeInteger(haggle) || haggle < 0 || haggle > maxHaggle) {
+        throw new BusinessError('haggle_limit', `La rebaja máxima es ${formatPEN(maxHaggle)}.`);
+      }
 
       const lines = await db.ticketLines.where('ticketId').equals(ticketId).toArray();
       lines.sort((a, b) => a.seq - b.seq);
@@ -166,10 +175,21 @@ export async function checkoutTicket(ticketId: string, payment: Payment, now = D
 
       let subtotal = 0;
       let total = 0;
-      const finalLines: TicketLine[] = lines.map((l) => {
+      const gross = lines.map((l) => {
+        const p = products.get(l.productId)!;
+        return { lineTotal: lineAmount(p, l.qty, l.priceOverride ?? p.salePrice), eligible: !!p.allowsHaggle };
+      });
+      if (haggle > 0) {
+        const eligibleTotal = gross.reduce((a, g) => a + (g.eligible ? g.lineTotal : 0), 0);
+        if (haggle >= eligibleTotal)
+          throw new BusinessError('haggle_not_allowed', 'Ningún producto del ticket admite esa rebaja.');
+      }
+      const shares = distributeDiscount(gross, haggle);
+      const finalLines: TicketLine[] = lines.map((l, i) => {
         const p = products.get(l.productId)!;
         const unitPrice = l.priceOverride ?? p.salePrice;
-        const lineTotal = lineAmount(p, l.qty, unitPrice);
+        const lineDiscount = shares[i]!;
+        const lineTotal = gross[i]!.lineTotal - lineDiscount;
         const costTotal = lineAmount(p, l.qty, p.costPrice);
         subtotal += lineAmount(p, l.qty, p.salePrice);
         total += lineTotal;
@@ -181,6 +201,7 @@ export async function checkoutTicket(ticketId: string, payment: Payment, now = D
           unitCost: p.costPrice,
           lineTotal,
           lineProfit: lineTotal - costTotal,
+          lineDiscount,
         };
       });
 
@@ -204,6 +225,7 @@ export async function checkoutTicket(ticketId: string, payment: Payment, now = D
         paymentMethod: payment.method,
         subtotal,
         discount: subtotal - total,
+        haggle,
         total,
         cashReceived,
         change,

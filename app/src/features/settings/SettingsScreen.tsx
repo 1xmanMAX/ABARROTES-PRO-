@@ -74,6 +74,22 @@ export default function SettingsScreen() {
         </div>
 
         <div className={s.field}>
+          {t.settings.maxHaggle}
+          <div className={s.segment} role="group" aria-label={t.settings.maxHaggle}>
+            {[0, 100, 200, 300, 400, 500].map((v) => (
+              <button
+                key={v}
+                type="button"
+                aria-pressed={settings.maxHaggle === v}
+                onClick={() => updateSettings({ maxHaggle: v })}
+              >
+                {v === 0 ? 'No' : `S/ ${v / 100}`}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className={s.field}>
           {t.settings.theme}
           <div className={s.segment} role="group" aria-label={t.settings.theme}>
             {THEMES.map((th) => (

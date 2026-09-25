@@ -45,15 +45,15 @@ export function ReceiptPrinter() {
               <span>
                 {formatQty({ allowsFraction: l.fractional }, l.qty)} × {formatPEN(l.unitPrice)}
               </span>
-              <span>{formatPEN(l.lineTotal)}</span>
+              <span>{formatPEN(l.lineTotal + (l.lineDiscount ?? 0))}</span>
             </div>
           </div>
         ))}
         <div className={styles.rule} />
-        {ticket.discount > 0 && (
+        {(ticket.haggle ?? 0) > 0 && (
           <div className={styles.split}>
-            <span>{t.receipt.discount}</span>
-            <span>−{formatPEN(ticket.discount)}</span>
+            <span>{t.receipt.haggle}</span>
+            <span>−{formatPEN(ticket.haggle!)}</span>
           </div>
         )}
         <div className={`${styles.split} ${styles.total}`}>

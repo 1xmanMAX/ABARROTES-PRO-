@@ -125,9 +125,15 @@ function TicketDetail({ ticketId, onClose }: { ticketId: string; onClose: () => 
             {l.productName} × {formatQty({ allowsFraction: l.fractional }, l.qty)}
             {l.priceOverrideReason && <span className={s.muted}> ({l.priceOverrideReason})</span>}
           </span>
-          <span className="mono">{formatPEN(l.lineTotal)}</span>
+          <span className="mono">{formatPEN(l.lineTotal + (l.lineDiscount ?? 0))}</span>
         </div>
       ))}
+      {(ticket.haggle ?? 0) > 0 && (
+        <div className={styles.line}>
+          <span>{t.receipt.haggle}</span>
+          <span className="mono">−{formatPEN(ticket.haggle!)}</span>
+        </div>
+      )}
       <div className={`${styles.line} ${styles.total}`}>
         <span>{t.receipt.total}</span>
         <span className="mono">{formatPEN(ticket.total)}</span>

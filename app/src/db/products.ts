@@ -19,6 +19,7 @@ export interface ProductInput {
   photo: Blob | null;
   pinnedPosition: number | null;
   active: boolean;
+  allowsHaggle?: boolean;
 }
 
 function validate(input: ProductInput): void {

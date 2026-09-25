@@ -19,7 +19,9 @@ export function useProductMap(products: Product[]): Map<string, Product> {
 }
 
 export function useSettings(): Settings {
-  return useLiveQuery(() => db.settings.get('main'), []) ?? DEFAULT_SETTINGS;
+  // Completar campos nuevos en ajustes guardados por versiones anteriores.
+  const stored = useLiveQuery(() => db.settings.get('main'), []);
+  return useMemo(() => ({ ...DEFAULT_SETTINGS, ...stored }), [stored]);
 }
 
 /**
