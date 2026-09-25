@@ -31,7 +31,10 @@ export function centsToInput(cents: Cents): string {
  * sin pasar por flotantes. Devuelve null si no es un monto válido.
  */
 export function parseSolesToCents(text: string): Cents | null {
-  const clean = text.trim().replace(/,/g, '').replace(/^S\/\s*/i, '');
+  const clean = text
+    .trim()
+    .replace(/,/g, '')
+    .replace(/^S\/\s*/i, '');
   const m = /^(\d+)(?:\.(\d{0,2}))?$/.exec(clean);
   if (!m) return null;
   const soles = Number(m[1]);

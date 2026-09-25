@@ -17,7 +17,11 @@ export default function InventoryScreen() {
   const push = useNav((st) => st.push);
   const [q, setQ] = useState('');
   const list = useMemo(
-    () => searchProducts([...products].sort((a, b) => collator.compare(a.name, b.name)), q),
+    () =>
+      searchProducts(
+        [...products].sort((a, b) => collator.compare(a.name, b.name)),
+        q,
+      ),
     [products, q],
   );
 

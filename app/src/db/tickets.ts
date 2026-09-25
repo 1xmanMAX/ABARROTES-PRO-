@@ -5,6 +5,7 @@ import { dayKeyOf } from '../domain/time';
 import { BusinessError } from './errors';
 import { newId } from './ids';
 import { db } from './schema';
+import { applyTicketStats } from './stats';
 import type { Ticket, TicketLine } from './types';
 
 export const MAX_OPEN_TICKETS = 6;
@@ -76,11 +77,7 @@ export async function openTicket(): Promise<Ticket> {
       throw new BusinessError('too_many_tickets', `Máximo ${MAX_OPEN_TICKETS} clientes en espera.`);
     }
     const tabOrder = open.reduce((m, t) => Math.max(m, t.tabOrder), -1) + 1;
-    const ticket = blankTicket(
-      nextTicketLabel(open.map((t) => t.label)),
-      tabOrder,
-      Date.now(),
-    );
+    const ticket = blankTicket(nextTicketLabel(open.map((t) => t.label)), tabOrder, Date.now());
     await db.tickets.add(ticket);
     return ticket;
   });
@@ -133,9 +130,7 @@ export async function discardEmptyTicket(ticketId: string): Promise<void> {
   });
 }
 
-export type Payment =
-  | { method: 'cash'; cashReceived: Cents }
-  | { method: 'digital'; digitalRef: string | null };
+export type Payment = { method: 'cash'; cashReceived: Cents } | { method: 'digital'; digitalRef: string | null };
 
 /**
  * Cobra un ticket abierto en una sola transacción: snapshots de líneas,
@@ -146,110 +141,113 @@ export async function checkoutTicket(ticketId: string, payment: Payment, now = D
   const digitalRef =
     payment.method === 'digital' && payment.digitalRef ? payment.digitalRef.replace(/\D/g, '').slice(-3) || null : null;
 
-  return db.transaction('rw', [db.tickets, db.ticketLines, db.products, db.stockMovements, db.cashMovements], async () => {
-    const ticket = await db.tickets.get(ticketId);
-    if (!ticket) throw new BusinessError('not_found', 'Ticket no encontrado.');
-    if (ticket.status !== 'open') throw new BusinessError('not_open', 'Este ticket ya fue cobrado.');
+  return db.transaction(
+    'rw',
+    [db.tickets, db.ticketLines, db.products, db.stockMovements, db.cashMovements, db.productStats, db.pairStats],
+    async () => {
+      const ticket = await db.tickets.get(ticketId);
+      if (!ticket) throw new BusinessError('not_found', 'Ticket no encontrado.');
+      if (ticket.status !== 'open') throw new BusinessError('not_open', 'Este ticket ya fue cobrado.');
 
-    const lines = await db.ticketLines.where('ticketId').equals(ticketId).toArray();
-    lines.sort((a, b) => a.seq - b.seq);
-    if (lines.length === 0) throw new BusinessError('empty', 'El ticket está vacío.');
+      const lines = await db.ticketLines.where('ticketId').equals(ticketId).toArray();
+      lines.sort((a, b) => a.seq - b.seq);
+      if (lines.length === 0) throw new BusinessError('empty', 'El ticket está vacío.');
 
-    const qtyByProduct = new Map<string, number>();
-    for (const l of lines) qtyByProduct.set(l.productId, (qtyByProduct.get(l.productId) ?? 0) + l.qty);
+      const qtyByProduct = new Map<string, number>();
+      for (const l of lines) qtyByProduct.set(l.productId, (qtyByProduct.get(l.productId) ?? 0) + l.qty);
 
-    const products = new Map((await db.products.bulkGet([...qtyByProduct.keys()])).filter((p) => !!p).map((p) => [p!.id, p!]));
-    for (const [productId, qty] of qtyByProduct) {
-      const p = products.get(productId);
-      if (!p) throw new BusinessError('not_found', 'Un producto del ticket ya no existe.');
-      if (qty <= 0 || !Number.isSafeInteger(qty)) throw new BusinessError('invalid_qty', 'Cantidad inválida.');
-      if (p.stock < qty) throw new BusinessError('no_stock', `No hay stock suficiente de ${p.name}.`);
-    }
+      const products = new Map((await db.products.bulkGet([...qtyByProduct.keys()])).filter((p) => !!p).map((p) => [p!.id, p!]));
+      for (const [productId, qty] of qtyByProduct) {
+        const p = products.get(productId);
+        if (!p) throw new BusinessError('not_found', 'Un producto del ticket ya no existe.');
+        if (qty <= 0 || !Number.isSafeInteger(qty)) throw new BusinessError('invalid_qty', 'Cantidad inválida.');
+        if (p.stock < qty) throw new BusinessError('no_stock', `No hay stock suficiente de ${p.name}.`);
+      }
 
-    let subtotal = 0;
-    let total = 0;
-    const finalLines: TicketLine[] = lines.map((l) => {
-      const p = products.get(l.productId)!;
-      const unitPrice = l.priceOverride ?? p.salePrice;
-      const lineTotal = lineAmount(p, l.qty, unitPrice);
-      const costTotal = lineAmount(p, l.qty, p.costPrice);
-      subtotal += lineAmount(p, l.qty, p.salePrice);
-      total += lineTotal;
-      return {
-        ...l,
-        productName: p.name,
-        fractional: p.allowsFraction,
-        unitPrice,
-        unitCost: p.costPrice,
-        lineTotal,
-        lineProfit: lineTotal - costTotal,
+      let subtotal = 0;
+      let total = 0;
+      const finalLines: TicketLine[] = lines.map((l) => {
+        const p = products.get(l.productId)!;
+        const unitPrice = l.priceOverride ?? p.salePrice;
+        const lineTotal = lineAmount(p, l.qty, unitPrice);
+        const costTotal = lineAmount(p, l.qty, p.costPrice);
+        subtotal += lineAmount(p, l.qty, p.salePrice);
+        total += lineTotal;
+        return {
+          ...l,
+          productName: p.name,
+          fractional: p.allowsFraction,
+          unitPrice,
+          unitCost: p.costPrice,
+          lineTotal,
+          lineProfit: lineTotal - costTotal,
+        };
+      });
+
+      if (total <= 0) throw new BusinessError('zero_total', 'El total debe ser mayor a cero.');
+      let cashReceived: Cents | null = null;
+      let change: Cents | null = null;
+      if (payment.method === 'cash') {
+        if (payment.cashReceived < total) throw new BusinessError('insufficient_cash', 'El monto recibido no alcanza.');
+        cashReceived = payment.cashReceived;
+        change = payment.cashReceived - total;
+      }
+
+      const dayKey = dayKeyOf(now);
+      const lastOfDay = await db.tickets.where('[dayKey+number]').between([dayKey, 1], [dayKey, Infinity]).last();
+      const number = (lastOfDay?.number ?? 0) + 1;
+
+      const closed: Ticket = {
+        ...ticket,
+        number,
+        status: 'paid',
+        paymentMethod: payment.method,
+        subtotal,
+        discount: subtotal - total,
+        total,
+        cashReceived,
+        change,
+        digitalRef,
+        dayKey,
+        closedAt: now,
+        updatedAt: now,
       };
-    });
+      await db.tickets.put(closed);
+      await db.ticketLines.bulkPut(finalLines);
 
-    if (total <= 0) throw new BusinessError('zero_total', 'El total debe ser mayor a cero.');
-    let cashReceived: Cents | null = null;
-    let change: Cents | null = null;
-    if (payment.method === 'cash') {
-      if (payment.cashReceived < total) throw new BusinessError('insufficient_cash', 'El monto recibido no alcanza.');
-      cashReceived = payment.cashReceived;
-      change = payment.cashReceived - total;
-    }
+      for (const [productId, qty] of qtyByProduct) {
+        const p = products.get(productId)!;
+        await db.products.update(productId, { stock: p.stock - qty, updatedAt: now });
+        await db.stockMovements.add({
+          id: newId(),
+          productId,
+          delta: -qty,
+          reason: 'sale',
+          refType: 'ticket',
+          refId: ticketId,
+          note: '',
+          createdAt: now,
+        });
+      }
 
-    const dayKey = dayKeyOf(now);
-    const lastOfDay = await db.tickets
-      .where('[dayKey+number]')
-      .between([dayKey, 1], [dayKey, Infinity])
-      .last();
-    const number = (lastOfDay?.number ?? 0) + 1;
-
-    const closed: Ticket = {
-      ...ticket,
-      number,
-      status: 'paid',
-      paymentMethod: payment.method,
-      subtotal,
-      discount: subtotal - total,
-      total,
-      cashReceived,
-      change,
-      digitalRef,
-      dayKey,
-      closedAt: now,
-      updatedAt: now,
-    };
-    await db.tickets.put(closed);
-    await db.ticketLines.bulkPut(finalLines);
-
-    for (const [productId, qty] of qtyByProduct) {
-      const p = products.get(productId)!;
-      await db.products.update(productId, { stock: p.stock - qty, updatedAt: now });
-      await db.stockMovements.add({
+      await db.cashMovements.add({
         id: newId(),
-        productId,
-        delta: -qty,
-        reason: 'sale',
+        type: 'sale',
+        method: payment.method,
+        amount: total,
         refType: 'ticket',
         refId: ticketId,
-        note: '',
+        note: `Venta #${String(number).padStart(4, '0')}`,
+        dayKey,
         createdAt: now,
+        voidedAt: null,
       });
-    }
 
-    await db.cashMovements.add({
-      id: newId(),
-      type: 'sale',
-      method: payment.method,
-      amount: total,
-      refType: 'ticket',
-      refId: ticketId,
-      note: `Venta #${String(number).padStart(4, '0')}`,
-      dayKey,
-      createdAt: now,
-      voidedAt: null,
-    });
+      await applyTicketStats(finalLines, { kind: 'add', at: now });
 
-    return closed;
-  });
+      return closed;
+    },
+  );
 }
 
 /**
@@ -263,7 +261,7 @@ export async function voidTicket(ticketId: string, reason: string, now = Date.no
 
   await db.transaction(
     'rw',
-    [db.tickets, db.ticketLines, db.products, db.stockMovements, db.cashMovements, db.auditLog],
+    [db.tickets, db.ticketLines, db.products, db.stockMovements, db.cashMovements, db.auditLog, db.productStats, db.pairStats],
     async () => {
       const ticket = await db.tickets.get(ticketId);
       if (!ticket) throw new BusinessError('not_found', 'Ticket no encontrado.');
@@ -296,6 +294,7 @@ export async function voidTicket(ticketId: string, reason: string, now = Date.no
           if (m.voidedAt == null) m.voidedAt = now;
         });
 
+      await applyTicketStats(lines, { kind: 'remove', soldAt: ticket.closedAt ?? ticket.createdAt, now });
       await db.tickets.update(ticketId, { status: 'void', voidReason: cleanReason, voidedAt: now, updatedAt: now });
       await db.auditLog.add({
         id: newId(),

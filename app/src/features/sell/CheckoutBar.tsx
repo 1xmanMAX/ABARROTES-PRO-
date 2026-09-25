@@ -15,9 +15,7 @@ export function CheckoutBar({ count, label, total, onDetail, onCharge }: Props) 
   return (
     <div className={styles.checkoutBar}>
       <button type="button" className={styles.totalBtn} onClick={onDetail} disabled={empty} aria-label={t.sell.detail}>
-        <span className={styles.totalMeta}>
-          {empty ? t.sell.emptyTicket : `${t.sell.products(count)} · ${label}`}
-        </span>
+        <span className={styles.totalMeta}>{empty ? t.sell.emptyTicket : `${t.sell.products(count)} · ${label}`}</span>
         <span className={styles.totalValue} data-testid="ticket-total">
           {formatPEN(total)}
         </span>

@@ -8,6 +8,7 @@ import { getTicketWithLines, voidTicket } from '../../db/tickets';
 import type { Ticket } from '../../db/types';
 import { t } from '../../i18n/es-PE';
 import { usePrint } from '../../print/printStore';
+import { afterSalesChange } from '../sell/sellStore';
 import { Button } from '../../ui/Button';
 import { ScreenHeader } from '../../ui/ScreenHeader';
 import { Sheet } from '../../ui/Sheet';
@@ -30,7 +31,9 @@ export default function HistoryScreen() {
   );
   const [selected, setSelected] = useState<string | null>(null);
   const today = dayKeyOf(Date.now());
-  const todayTotal = (tickets ?? []).filter((tk) => tk.dayKey === today && tk.status === 'paid').reduce((a, tk) => a + tk.total, 0);
+  const todayTotal = (tickets ?? [])
+    .filter((tk) => tk.dayKey === today && tk.status === 'paid')
+    .reduce((a, tk) => a + tk.total, 0);
 
   return (
     <div className={s.screen}>
@@ -71,6 +74,7 @@ function TicketDetail({ ticketId, onClose }: { ticketId: string; onClose: () => 
   const doVoid = async () => {
     try {
       await voidTicket(ticket.id, reason);
+      void afterSalesChange();
       toast(t.history.voided, 'success');
       setVoiding(false);
     } catch (err) {

@@ -169,12 +169,22 @@ function ProductForm({ product }: { product: Product | undefined }) {
 
         <label className={s.field}>
           {t.inventory.fields.name}
-          <input className={s.input} value={f.name} placeholder={t.inventory.fields.namePh} onChange={(e) => set('name', e.target.value)} />
+          <input
+            className={s.input}
+            value={f.name}
+            placeholder={t.inventory.fields.namePh}
+            onChange={(e) => set('name', e.target.value)}
+          />
         </label>
         <div className={s.row}>
           <label className={s.field}>
             {t.inventory.fields.baseName}
-            <input className={s.input} value={f.baseName} placeholder={t.inventory.fields.baseNamePh} onChange={(e) => set('baseName', e.target.value)} />
+            <input
+              className={s.input}
+              value={f.baseName}
+              placeholder={t.inventory.fields.baseNamePh}
+              onChange={(e) => set('baseName', e.target.value)}
+            />
           </label>
           <label className={s.field}>
             {t.inventory.fields.unit}
@@ -194,11 +204,21 @@ function ProductForm({ product }: { product: Product | undefined }) {
         <div className={s.row}>
           <label className={s.field}>
             {t.inventory.fields.salePrice}
-            <input className={`${s.input} mono`} inputMode="decimal" value={f.salePrice} onChange={(e) => set('salePrice', e.target.value)} />
+            <input
+              className={`${s.input} mono`}
+              inputMode="decimal"
+              value={f.salePrice}
+              onChange={(e) => set('salePrice', e.target.value)}
+            />
           </label>
           <label className={s.field}>
             {t.inventory.fields.costPrice}
-            <input className={`${s.input} mono`} inputMode="decimal" value={f.costPrice} onChange={(e) => set('costPrice', e.target.value)} />
+            <input
+              className={`${s.input} mono`}
+              inputMode="decimal"
+              value={f.costPrice}
+              onChange={(e) => set('costPrice', e.target.value)}
+            />
           </label>
         </div>
         {marginText && (
@@ -206,18 +226,33 @@ function ProductForm({ product }: { product: Product | undefined }) {
         )}
         <label className={s.field}>
           {t.inventory.fields.sellerPrice}
-          <input className={`${s.input} mono`} inputMode="decimal" value={f.sellerPrice} onChange={(e) => set('sellerPrice', e.target.value)} />
+          <input
+            className={`${s.input} mono`}
+            inputMode="decimal"
+            value={f.sellerPrice}
+            onChange={(e) => set('sellerPrice', e.target.value)}
+          />
         </label>
         <div className={s.row}>
           {!product && (
             <label className={s.field}>
               {t.inventory.fields.initialStock}
-              <input className={`${s.input} mono`} inputMode="decimal" value={f.initialStock} onChange={(e) => set('initialStock', e.target.value)} />
+              <input
+                className={`${s.input} mono`}
+                inputMode="decimal"
+                value={f.initialStock}
+                onChange={(e) => set('initialStock', e.target.value)}
+              />
             </label>
           )}
           <label className={s.field}>
             {t.inventory.fields.minStock}
-            <input className={`${s.input} mono`} inputMode="decimal" value={f.minStock} onChange={(e) => set('minStock', e.target.value)} />
+            <input
+              className={`${s.input} mono`}
+              inputMode="decimal"
+              value={f.minStock}
+              onChange={(e) => set('minStock', e.target.value)}
+            />
           </label>
           <label className={s.field}>
             {t.inventory.fields.pinned}

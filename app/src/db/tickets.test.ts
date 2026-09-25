@@ -1,14 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { adjustStock, createProduct, type ProductInput } from './products';
 import { db, resetDbForTests } from './schema';
-import {
-  checkoutTicket,
-  loadOpenTickets,
-  MAX_OPEN_TICKETS,
-  openTicket,
-  saveOpenTicketLines,
-  voidTicket,
-} from './tickets';
+import { checkoutTicket, loadOpenTickets, MAX_OPEN_TICKETS, openTicket, saveOpenTicketLines, voidTicket } from './tickets';
 
 const base: ProductInput = {
   name: 'Arroz saco 50kg',
@@ -54,7 +47,13 @@ describe('tickets', () => {
     expect((await db.products.get(aceite))!.stock).toBe(4);
     const lines = await db.ticketLines.where('ticketId').equals(t.id).toArray();
     const arrozLine = lines.find((l) => l.productId === arroz)!;
-    expect(arrozLine).toMatchObject({ productName: 'Arroz saco 50kg', unitPrice: 18500, unitCost: 16500, lineTotal: 37000, lineProfit: 4000 });
+    expect(arrozLine).toMatchObject({
+      productName: 'Arroz saco 50kg',
+      unitPrice: 18500,
+      unitCost: 16500,
+      lineTotal: 37000,
+      lineProfit: 4000,
+    });
     const cash = await db.cashMovements.toArray();
     expect(cash).toHaveLength(1);
     expect(cash[0]).toMatchObject({ type: 'sale', method: 'cash', amount: 47800 });

@@ -1,11 +1,14 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useOrderedSellProducts, useProductMap, useProducts } from '../../app/data';
 import { Menu } from '../../app/Menu';
 import { useNav } from '../../app/nav';
 import { cartItemCount, cartTotal, reservedByProduct } from '../../domain/cart';
 import { formatQty, unitStep } from '../../domain/qty';
-import { seedDemoProducts } from '../../db/seed';
+import { seedDemo } from '../../db/seed';
+import { refreshStats, useStats } from '../../app/stats';
+import { predictNext } from '../../domain/prediction';
+import { hourOf } from '../../domain/time';
 import type { Product } from '../../db/types';
 import { MAX_OPEN_TICKETS } from '../../db/tickets';
 import { recomputeGridOrder } from '../../app/data';
@@ -19,6 +22,7 @@ import { MultiplierBar } from './MultiplierBar';
 import { ProductGrid } from './ProductGrid';
 import { RenameSheet } from './RenameSheet';
 import { SearchSheet } from './SearchSheet';
+import { SuggestionRow } from './SuggestionRow';
 import { activeTicket, useSell } from './sellStore';
 import { TicketTabs, type TabInfo } from './TicketTabs';
 import styles from './Sell.module.css';
@@ -68,6 +72,30 @@ export function SellScreen() {
   const qtyInActive = useMemo(() => new Map(active.lines.map((l) => [l.productId, l.qty])), [active.lines]);
   const total = useMemo(() => cartTotal(active.lines, productMap), [active.lines, productMap]);
   const count = useMemo(() => cartItemCount(active.lines, productMap), [active.lines, productMap]);
+  // "Siguiente probable": cálculo en memoria con las estadísticas precalculadas.
+  const stats = useStats();
+  const previousSuggestions = useRef<string[]>([]);
+  const suggestions = useMemo(() => {
+    const inCart = active.lines.map((l) => l.productId);
+    const candidates = gridProducts.filter((p) => !qtyInActive.has(p.id) && available(p) >= unitStep(p)).map((p) => p.id);
+    const now = Date.now();
+    return predictNext({
+      candidates,
+      cart: inCart,
+      productStats: stats.products,
+      pairStats: stats.pairs,
+      hour: hourOf(now),
+      now,
+      closedTickets: stats.closedTickets,
+      previous: previousSuggestions.current,
+    })
+      .map((id) => productMap.get(id))
+      .filter((p): p is Product => !!p);
+  }, [active.lines, gridProducts, qtyInActive, available, stats, productMap]);
+  useEffect(() => {
+    previousSuggestions.current = suggestions.map((p) => p.id);
+  }, [suggestions]);
+
   const tabs: TabInfo[] = useMemo(
     () => tickets.map((tk) => ({ id: tk.id, label: tk.label, total: cartTotal(tk.lines, productMap) })),
     [tickets, productMap],
@@ -109,7 +137,8 @@ export function SellScreen() {
           </Button>
           <Button
             onClick={async () => {
-              await seedDemoProducts();
+              await seedDemo();
+              await refreshStats();
               await recomputeGridOrder();
             }}
           >
@@ -138,6 +167,7 @@ export function SellScreen() {
       </SellHeader>
 
       <main className={styles.main}>
+        <SuggestionRow products={suggestions} onTap={onTap} />
         <ProductGrid
           products={gridProducts}
           qtyInActive={qtyInActive}

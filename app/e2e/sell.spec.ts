@@ -1,21 +1,12 @@
-import { expect, test, type Page } from '@playwright/test';
-
-async function freshWithDemo(page: Page) {
-  await page.goto('/');
-  await page.getByRole('button', { name: 'Cargar productos de ejemplo' }).click();
-  await expect(page.getByTestId('product-grid').locator('[data-product-id]')).toHaveCount(10);
-}
-
-const tile = (page: Page, name: string) => page.getByRole('button', { name: new RegExp(`^${name}`) });
-
-async function gridPositions(page: Page) {
-  return page.getByTestId('product-grid').locator('[data-product-id]').evaluateAll((els) => els.map((e) => e.getAttribute('data-product-id')));
-}
+import { expect, test } from '@playwright/test';
+import { freshWithDemo, gridNames, gridPositions, tapProduct, tile } from './helpers';
 
 test('venta de 3 productos en efectivo exacto en 5 toques, sin cambiar el orden', async ({ page }) => {
   await freshWithDemo(page);
   const before = await gridPositions(page);
-  expect(before).toHaveLength(10);
+  expect(before.length).toBeGreaterThanOrEqual(8);
+  const names = await gridNames(page);
+  expect(names).toEqual(expect.arrayContaining(['Arroz saco 50kg', 'Aceite caja ×12', 'Azúcar saco 50kg']));
 
   await tile(page, 'Arroz saco 50kg').click(); // 1
   await tile(page, 'Aceite caja ×12').click(); // 2
@@ -59,10 +50,10 @@ test('multiplicador, deshacer y límite de stock entre tickets', async ({ page }
   await freshWithDemo(page);
   // Atún: stock 15
   await page.getByRole('button', { name: '×10', exact: true }).click();
-  await tile(page, 'Atún caja ×48').click();
+  await tapProduct(page, 'Atún caja ×48');
   await expect(page.getByTestId('ticket-total')).toHaveText('S/ 2,400.00');
   // El ×10 ya volvió a ×1
-  await tile(page, 'Atún caja ×48').click();
+  await tapProduct(page, 'Atún caja ×48');
   await expect(page.getByTestId('ticket-total')).toHaveText('S/ 2,640.00');
   await page.getByRole('button', { name: 'Deshacer' }).click();
   await expect(page.getByTestId('ticket-total')).toHaveText('S/ 2,400.00');
@@ -70,18 +61,19 @@ test('multiplicador, deshacer y límite de stock entre tickets', async ({ page }
   // Segundo cliente: solo quedan 5 disponibles
   await page.getByRole('button', { name: 'Nuevo cliente en espera' }).click();
   await page.getByRole('button', { name: '×10', exact: true }).click();
-  await tile(page, 'Atún caja ×48').click();
+  await tapProduct(page, 'Atún caja ×48');
   await expect(page.getByRole('status')).toContainText('Solo quedan 5');
   await expect(page.getByTestId('ticket-total')).toHaveText('S/ 1,200.00');
-  await expect(tile(page, 'Atún caja ×48')).toBeDisabled();
+  await page.getByRole('button', { name: 'Buscar otro producto' }).click();
+  await expect(page.getByRole('dialog').getByRole('button', { name: /^Atún caja/ })).toBeDisabled();
 });
 
 test('los tickets en espera sobreviven a una recarga', async ({ page }) => {
   await freshWithDemo(page);
   await tile(page, 'Arroz saco 50kg').click();
   await page.getByRole('button', { name: 'Nuevo cliente en espera' }).click();
-  await tile(page, 'Sal bolsa ×50').click();
-  await tile(page, 'Sal bolsa ×50').click();
+  await tapProduct(page, 'Sal bolsa ×50');
+  await tapProduct(page, 'Sal bolsa ×50');
   await expect(page.getByTestId('ticket-total')).toHaveText('S/ 70.00');
   // Dar tiempo al guardado en segundo plano.
   await page.waitForTimeout(300);

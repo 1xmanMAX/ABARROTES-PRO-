@@ -33,7 +33,15 @@ export function Sheet({ title, onClose, children, footer }: Props) {
         <div className={styles.head}>
           <h2 className={styles.title}>{title}</h2>
           <button type="button" className={styles.close} aria-label={t.common.close} onClick={onClose}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+            >
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>
           </button>

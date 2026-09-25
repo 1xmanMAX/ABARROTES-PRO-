@@ -71,7 +71,13 @@ export function AdjustStockSheet({ product, onClose }: { product: Product; onClo
               </button>
             </div>
           )}
-          <input className={`${s.input} mono`} inputMode="decimal" autoFocus value={qtyText} onChange={(e) => setQtyText(e.target.value)} />
+          <input
+            className={`${s.input} mono`}
+            inputMode="decimal"
+            autoFocus
+            value={qtyText}
+            onChange={(e) => setQtyText(e.target.value)}
+          />
         </div>
       </label>
       <label className={s.field}>

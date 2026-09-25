@@ -1,15 +1,13 @@
 import { create } from 'zustand';
-import {
-  addQty,
-  EMPTY_CART,
-  setPrice,
-  setQty,
-  undo as undoCart,
-  type CartLine,
-  type CartState,
-} from '../../domain/cart';
+import { addQty, EMPTY_CART, setPrice, setQty, undo as undoCart, type CartLine, type CartState } from '../../domain/cart';
 import type { Cents } from '../../domain/money';
-import { consumeMultiplier, MULTIPLIER_DEFAULT, pressMultiplier, type MultiplierState, type MultiplierValue } from '../../domain/multiplier';
+import {
+  consumeMultiplier,
+  MULTIPLIER_DEFAULT,
+  pressMultiplier,
+  type MultiplierState,
+  type MultiplierValue,
+} from '../../domain/multiplier';
 import type { Qty } from '../../domain/qty';
 import {
   checkoutTicket,
@@ -22,6 +20,8 @@ import {
   type Payment,
 } from '../../db/tickets';
 import type { Ticket } from '../../db/types';
+import { recomputeIfNewDay } from '../../app/data';
+import { refreshStats } from '../../app/stats';
 
 export interface OpenTicket extends CartState {
   id: string;
@@ -169,6 +169,7 @@ export const useSell = create<SellState>((set, get) => {
       }
       const nextActive = rest[Math.min(Math.max(idx, 0), rest.length - 1)]!;
       set({ tickets: rest, activeId: nextActive.id, multiplier: MULTIPLIER_DEFAULT });
+      void afterSalesChange();
       return closed;
     },
   };
@@ -177,3 +178,9 @@ export const useSell = create<SellState>((set, get) => {
 const NO_TICKET: OpenTicket = { ...EMPTY_CART, id: '', label: '' };
 export const activeTicket = (s: SellState): OpenTicket => s.tickets.find((t) => t.id === s.activeId) ?? NO_TICKET;
 export const anyTicketHasLines = (s: SellState): boolean => s.tickets.some((t) => t.lines.length > 0);
+
+/** Después de una venta o anulación: refrescar la predicción y, si empezó un día nuevo, reordenar. */
+export async function afterSalesChange(): Promise<void> {
+  await refreshStats();
+  await recomputeIfNewDay(anyTicketHasLines(useSell.getState()));
+}

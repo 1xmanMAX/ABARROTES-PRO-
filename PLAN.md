@@ -42,8 +42,8 @@ Chart.js entra en la Fase 5 (Estadísticas), con carga diferida.
 
 | Fase | Estado |
 |---|---|
-| 1. Base: BD, inventario, vender, tickets en espera, cobrar (efectivo/Yape), recibo, PWA offline | **Hecha, esperando tu OK** |
-| 2. Predicción "Siguiente probable" y orden por popularidad | pendiente |
+| 1. Base: BD, inventario, vender, tickets en espera, cobrar (efectivo/Yape), recibo, PWA offline | Hecha y aprobada |
+| 2. Predicción "Siguiente probable" y orden por popularidad | **Hecha, esperando tu OK** |
 | 3. Clientes/vendedores, código personal, fiado, cobro de deudas, comprobante | pendiente |
 | 4. Consignación: entregar y liquidar | pendiente |
 | 5. Caja, compras, gastos, estadísticas, inicio | pendiente |
@@ -64,6 +64,18 @@ Puedes cambiar cualquiera de estas decisiones.
 9. **Fiado** aparece en Cobrar, pero desactivado ("Pronto") hasta la Fase 3.
 10. **Orden de la cuadrícula en la Fase 1:** primero los fijados y luego el resto por nombre. Se recalcula al abrir la app o con "Reordenar" en Ajustes, y nunca mientras haya tickets con productos. La popularidad con decaimiento entra en la Fase 2.
 11. **Esquema de BD.** La versión 1 tiene solo las tablas de la Fase 1. Cada fase agrega una versión de Dexie (migración), en vez de crear ahora tablas que todavía no se usan.
+
+## Ambigüedades y cómo las resolví (Fase 2)
+
+1. **Reordenar al abrir la app.** SPEC §2.2 (a) dice que se reordena al abrir, pero la regla principal es que el orden no cambie mientras un ticket tenga productos. Si al abrir hay un cliente en espera con productos, se mantiene el orden guardado y se reordena después.
+2. **Inicio del día.** Se reordena la primera vez después de medianoche en que ningún ticket tiene productos: al cobrar o al volver a la app si quedó abierta de noche.
+3. **Anular una venta** también resta su aporte a la predicción, para que un error no infle las sugerencias.
+4. **Ventas por hora** (`byHour`) son conteos simples, sin decaimiento, como dice DATA_MODEL §4.1. La popularidad y los pares sí decaen (vida media de 30 días).
+5. **Sin historial no se sugiere nada.** La fila queda con espacios vacíos del mismo alto, para que la cuadrícula no se mueva cuando aparezcan las sugerencias.
+6. **Texto de la sugerencia:** "+ nombre del producto" completo (por ejemplo "+ Aceite caja ×12"), en hasta 2 líneas. Con varias presentaciones del mismo producto, el nombre base sería ambiguo.
+7. **Ventas de la Fase 1:** al actualizar, la migración de la BD (versión 2) reconstruye las estadísticas desde las ventas ya registradas. No se pierde nada.
+8. **Datos de ejemplo:** el botón ahora carga los 10 productos y 300 ventas de los 30 días anteriores (nunca de hoy), con los pares frecuentes de DATA_MODEL §7. El stock final de cada producto no cambia.
+9. **Espacio en pantalla:** con la fila de sugerencias, en un teléfono de 390×844 entran 11 productos y "Buscar" (4 filas).
 
 ## Propuestas (no implementadas; necesito tu decisión)
 

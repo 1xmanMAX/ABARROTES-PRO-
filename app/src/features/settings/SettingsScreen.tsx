@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { recomputeGridOrder, useSettings } from '../../app/data';
-import { seedDemoProducts } from '../../db/seed';
+import { seedDemo } from '../../db/seed';
+import { refreshStats } from '../../app/stats';
 import { updateSettings } from '../../db/settings';
 import type { ThemePref } from '../../db/types';
 import { t } from '../../i18n/es-PE';
@@ -36,7 +37,8 @@ export default function SettingsScreen() {
   };
 
   const demo = async () => {
-    const n = await seedDemoProducts();
+    const n = await seedDemo();
+    await refreshStats();
     if (n === 0) return toast(t.settings.demoSkip);
     await recomputeGridOrder();
     toast(t.settings.demoDone(n), 'success');
@@ -59,7 +61,12 @@ export default function SettingsScreen() {
           {t.settings.paperWidth}
           <div className={s.segment} role="group" aria-label={t.settings.paperWidth}>
             {([58, 80] as const).map((w) => (
-              <button key={w} type="button" aria-pressed={settings.paperWidth === w} onClick={() => updateSettings({ paperWidth: w })}>
+              <button
+                key={w}
+                type="button"
+                aria-pressed={settings.paperWidth === w}
+                onClick={() => updateSettings({ paperWidth: w })}
+              >
                 {w} mm
               </button>
             ))}
@@ -83,6 +90,7 @@ export default function SettingsScreen() {
         <Button block variant="plain" onClick={demo}>
           {t.settings.demo}
         </Button>
+        <p className={s.muted}>{t.settings.demoHint}</p>
 
         <div className={s.card}>
           <div className={s.label}>{t.settings.storage}</div>

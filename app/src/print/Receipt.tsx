@@ -8,7 +8,6 @@ import { t } from '../i18n/es-PE';
 import { usePrint } from './printStore';
 import styles from './Receipt.module.css';
 
-
 /** Recibo de 58/80 mm renderizado solo para impresión (@media print). */
 export function ReceiptPrinter() {
   const job = usePrint((s) => s.job);

@@ -70,7 +70,12 @@ export function CartSheet({ lines, products, available, total, onSetQty, onEdit,
                 +
               </button>
             </div>
-            <button type="button" className={styles.removeBtn} aria-label={`${t.sell.remove} ${p.name}`} onClick={() => onSetQty(p.id, 0)}>
+            <button
+              type="button"
+              className={styles.removeBtn}
+              aria-label={`${t.sell.remove} ${p.name}`}
+              onClick={() => onSetQty(p.id, 0)}
+            >
               ✕
             </button>
           </div>

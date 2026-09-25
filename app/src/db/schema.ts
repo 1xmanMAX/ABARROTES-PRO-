@@ -1,4 +1,5 @@
-import Dexie, { type EntityTable } from 'dexie';
+import Dexie, { type EntityTable, type Transaction } from 'dexie';
+import { replayStats, type PairStat, type ProductStat } from '../domain/stats';
 import type { AuditEntry, CashMovement, Product, Settings, StockMovement, Ticket, TicketLine } from './types';
 
 export class BodegaDB extends Dexie {
@@ -9,6 +10,8 @@ export class BodegaDB extends Dexie {
   cashMovements!: EntityTable<CashMovement, 'id'>;
   auditLog!: EntityTable<AuditEntry, 'id'>;
   settings!: EntityTable<Settings, 'id'>;
+  productStats!: EntityTable<ProductStat, 'productId'>;
+  pairStats!: EntityTable<PairStat, 'key'>;
 
   constructor(name = 'mi-bodega') {
     super(name);
@@ -23,6 +26,13 @@ export class BodegaDB extends Dexie {
       auditLog: 'id, entity, entityId, createdAt',
       settings: 'id',
     });
+    // Fase 2: caché de predicción (DATA_MODEL §4), reconstruida desde el historial.
+    this.version(2)
+      .stores({
+        productStats: 'productId',
+        pairStats: 'key, a, b',
+      })
+      .upgrade((tx) => rebuildStatsIn(tx));
   }
 }
 
@@ -33,4 +43,30 @@ export function resetDbForTests(name: string): BodegaDB {
   db.close();
   db = new BodegaDB(name);
   return db;
+}
+
+/** Reconstruye productStats y pairStats desde los tickets cerrados no anulados. */
+export async function rebuildStatsIn(tx: Transaction): Promise<void> {
+  const tickets = await tx.table<Ticket>('tickets').where('status').anyOf('paid', 'credit').toArray();
+  const lines = await tx.table<TicketLine>('ticketLines').toArray();
+  const byTicket = new Map<string, TicketLine[]>();
+  for (const l of lines) {
+    const list = byTicket.get(l.ticketId);
+    if (list) list.push(l);
+    else byTicket.set(l.ticketId, [l]);
+  }
+  const { products, pairs } = replayStats(
+    tickets.map((t) => ({
+      closedAt: t.closedAt ?? t.createdAt,
+      lines: (byTicket.get(t.id) ?? []).map(toStatLine),
+    })),
+  );
+  await tx.table('productStats').clear();
+  await tx.table('pairStats').clear();
+  await tx.table('productStats').bulkPut([...products.values()]);
+  await tx.table('pairStats').bulkPut([...pairs.values()]);
+}
+
+export function toStatLine(l: Pick<TicketLine, 'productId' | 'qty' | 'fractional'>) {
+  return { productId: l.productId, units: l.fractional ? l.qty / 1000 : l.qty };
 }

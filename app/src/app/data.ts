@@ -2,6 +2,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
 import { create } from 'zustand';
 import { applyGridOrder, computeGridOrder } from '../domain/gridOrder';
+import { decayed } from '../domain/stats';
+import { dayKeyOf } from '../domain/time';
 import { db } from '../db/schema';
 import { DEFAULT_SETTINGS, getSettings, updateSettings } from '../db/settings';
 import type { Product, Settings } from '../db/types';
@@ -26,12 +28,30 @@ export function useSettings(): Settings {
  */
 export const useGridOrder = create<{ order: string[] }>(() => ({ order: [] }));
 
-/** Recalcula el orden y lo guarda (al abrir la app o con "Reordenar"). */
-export async function recomputeGridOrder(): Promise<void> {
+/**
+ * Recalcula el orden por unidades vendidas con decaimiento (DATA_MODEL §4.1) y
+ * lo guarda. Solo se llama cuando ningún ticket tiene productos (SPEC §2.2).
+ */
+export async function recomputeGridOrder(now = Date.now()): Promise<void> {
   const products = await db.products.filter((p) => p.active).toArray();
-  const order = computeGridOrder(products);
-  await updateSettings({ gridOrder: order, gridOrderComputedAt: Date.now() });
+  const stats = new Map((await db.productStats.toArray()).map((s) => [s.productId, s]));
+  const order = computeGridOrder(
+    products.map((p) => {
+      const s = stats.get(p.id);
+      return { ...p, score: s ? decayed(s.decayedQty, s.lastSoldAt, now) : 0 };
+    }),
+  );
+  await updateSettings({ gridOrder: order, gridOrderComputedAt: now });
   useGridOrder.setState({ order });
+}
+
+/** SPEC §2.2 (b): al empezar un día nuevo, reordenar en cuanto no haya tickets con productos. */
+export async function recomputeIfNewDay(ticketsBusy: boolean, now = Date.now()): Promise<boolean> {
+  if (ticketsBusy) return false;
+  const s = await getSettings();
+  if (s.gridOrderComputedAt !== null && dayKeyOf(s.gridOrderComputedAt) === dayKeyOf(now)) return false;
+  await recomputeGridOrder(now);
+  return true;
 }
 
 export async function loadGridOrder(): Promise<void> {
@@ -41,5 +61,12 @@ export async function loadGridOrder(): Promise<void> {
 
 export function useOrderedSellProducts(products: Product[]): Product[] {
   const order = useGridOrder((s) => s.order);
-  return useMemo(() => applyGridOrder(order, products.filter((p) => p.active)), [order, products]);
+  return useMemo(
+    () =>
+      applyGridOrder(
+        order,
+        products.filter((p) => p.active),
+      ),
+    [order, products],
+  );
 }

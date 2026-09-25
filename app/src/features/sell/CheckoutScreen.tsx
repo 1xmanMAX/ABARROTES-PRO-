@@ -13,7 +13,7 @@ import { ScreenHeader } from '../../ui/ScreenHeader';
 import { Sheet } from '../../ui/Sheet';
 import s from '../../ui/Screen.module.css';
 import { toast, toastError, useToast, vibrate } from '../../ui/toast';
-import { activeTicket, useSell } from './sellStore';
+import { activeTicket, afterSalesChange, useSell } from './sellStore';
 import styles from './Checkout.module.css';
 
 type Method = 'cash' | 'digital';
@@ -64,7 +64,10 @@ export function CheckoutScreen() {
         tone: 'success',
         actionLabel: t.common.undo,
         onAction: () => {
-          voidTicket(closed.id, t.checkout.undoneReason).then(() => toast(t.checkout.undone), toastError);
+          voidTicket(closed.id, t.checkout.undoneReason).then(() => {
+            toast(t.checkout.undone);
+            void afterSalesChange();
+          }, toastError);
         },
       });
     } catch (err) {
@@ -192,15 +195,7 @@ export function CheckoutScreen() {
   );
 }
 
-function OtherAmountSheet({
-  total,
-  onDone,
-  onClose,
-}: {
-  total: Cents;
-  onDone: (v: Cents) => void;
-  onClose: () => void;
-}) {
+function OtherAmountSheet({ total, onDone, onClose }: { total: Cents; onDone: (v: Cents) => void; onClose: () => void }) {
   const [text, setText] = useState('');
   const value = parseSolesToCents(text || '0');
   const change = value === null ? null : value - total;

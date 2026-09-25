@@ -431,3 +431,47 @@
   font-weight: 700;
   font-size: 22px;
 }
+
+.suggest {
+  flex-shrink: 0;
+}
+.suggestTitle {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+.suggestRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.chip {
+  height: 48px;
+  border: 1.5px dashed var(--gold);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1.15;
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.chipText {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.chip:active {
+  background: var(--paper-line);
+}
+.chipEmpty {
+  border-color: var(--paper-line);
+  background: transparent;
+}
