@@ -18,6 +18,7 @@ import { ScreenHeader } from '../../ui/ScreenHeader';
 import s from '../../ui/Screen.module.css';
 import styles from './Stats.module.css';
 import { Kpi } from './TodayScreen';
+import { computeEconomics, EconomicAnalysis, type Economics } from './EconomicAnalysis';
 import { fmtPct, signedPct, useSalesSince } from './useReport';
 
 type Period = '7' | '30' | 'all';
@@ -85,12 +86,21 @@ export default function ProfitScreen() {
       points = [...months.values()];
     }
     const rows = productReport(sales, products, periodDays);
+    const prevRows = days
+      ? productReport(
+          data.sales.filter((x) => x.dayKey < startKey),
+          products,
+          days,
+        )
+      : null;
+    const econ = computeEconomics(sum, rows, prevRows, periodDays);
     const verdict = businessVerdict(sum, exp.length > 0 || settings.fixedMonthlyCosts > 0);
-    return { sum, vs, points, rows, verdict, monthly: keys.length > 45 };
+    return { sum, vs, points, rows, verdict, monthly: keys.length > 45, econ };
   }, [data, days, now, settings.fixedMonthlyCosts, products]);
 
   if (!view) return null;
-  const { sum, vs, points, rows, verdict, monthly } = view;
+  const { sum, vs, points, rows, verdict, monthly, econ } = view;
+  const names = new Map(rows.map((r) => [r.productId, r.name]));
   const shown = filter === 'review' ? rows.filter((r) => REVIEW.has(r.verdict)) : rows;
   const reviewCount = rows.filter((r) => REVIEW.has(r.verdict)).length;
   const verdictText =
@@ -156,6 +166,8 @@ export default function ProfitScreen() {
           <BarChart points={points} name={monthly ? t.stats.chartMonthTitle : t.stats.chartTitle} />
         </div>
 
+        <EconomicAnalysis econ={econ} rows={rows} names={names} />
+
         <div className={styles.sectionHead}>
           <span className={s.label}>{t.stats.products}</span>
           <div className={s.segment} role="group" aria-label={t.stats.products} style={{ flex: '0 0 auto' }}>
@@ -173,6 +185,7 @@ export default function ProfitScreen() {
             <ProductItem
               key={r.productId}
               row={r}
+              econ={econ}
               open={open === r.productId}
               onToggle={() => setOpen(open === r.productId ? null : r.productId)}
             />
@@ -183,7 +196,20 @@ export default function ProfitScreen() {
   );
 }
 
-function ProductItem({ row: r, open, onToggle }: { row: ProductRow; open: boolean; onToggle: () => void }) {
+function ProductItem({
+  row: r,
+  econ,
+  open,
+  onToggle,
+}: {
+  row: ProductRow;
+  econ: Economics;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  const abc = econ.abcById.get(r.productId);
+  const bcg = econ.bcgById.get(r.productId);
+  const g = econ.gmroiById.get(r.productId);
   const tone = REVIEW.has(r.verdict) ? styles.chipBad : r.verdict === 'star' ? styles.chipStar : styles.chipOk;
   return (
     <li>
@@ -206,9 +232,23 @@ function ProductItem({ row: r, open, onToggle }: { row: ProductRow; open: boolea
           {t.stats.unitsSold(r.units, fmtPct(r.units))} · {t.stats.sold.toLowerCase()} {formatPEN(r.sales)} ·{' '}
           {t.stats.share(fmtPct(r.profitSharePct))}
         </span>
+        {(abc || bcg) && (
+          <span className={styles.tags}>
+            {abc && <span className={styles.tag}>{t.econ.abc.classes[abc.cls]}</span>}
+            {bcg && <span className={styles.tag}>{t.econ.bcg.names[bcg.quadrant]}</span>}
+          </span>
+        )}
         {open && (
           <span className={styles.advice}>
             {t.stats.advice[r.verdict]}
+            {g?.gmroi !== null && g?.gmroi !== undefined && (
+              <>
+                <br />
+                {t.econ.gmroi.value(fmtPct(g.gmroi))}
+                {g.turnover !== null && ` · ${t.econ.gmroi.turnover(fmtPct(g.turnover))}`}
+                {g.gmroi < 1 && ` · ${t.econ.gmroi.low}`}
+              </>
+            )}
             <br />
             {r.daysOfStock !== null && `${t.stats.stockDays(fmtPct(Math.round(r.daysOfStock)))} · `}
             {t.stats.stockValue(formatPEN(r.stockValue))}

@@ -301,6 +301,59 @@ export const t = {
     } as Record<string, string>,
     noProducts: 'No hay productos.',
   },
+  econ: {
+    title: 'Análisis económico',
+    whatIs: '¿Qué es?',
+    hide: 'Ocultar',
+    tapRow: 'Toca un producto para ver el acumulado',
+    tapDot: 'Toca un punto para ver el producto',
+    cumulative: (p: string) => `acumulado ${p} %`,
+    breakEven: {
+      title: 'Punto de equilibrio',
+      theory:
+        'Análisis costo-volumen-utilidad. Cada sol que vendes deja un margen de contribución (venta − costo de la mercadería). El punto de equilibrio es lo que tienes que vender para que esos márgenes paguen tus gastos fijos y otros gastos: ahí no ganas ni pierdes. Fórmula: gastos ÷ margen de contribución (%).',
+      needDaily: (a: string) => `Necesitas vender ${a} al día para no perder`,
+      actualDaily: (a: string) => `Vendes en promedio ${a} al día`,
+      target: (a: string) => `equilibrio ${a}`,
+      safety: (p: string) => `Margen de seguridad: tus ventas pueden bajar ${p} % antes de perder.`,
+      danger: (p: string) => `Estás ${p} % por debajo del equilibrio: con estas ventas el negocio pierde.`,
+      noFixed: 'Registra gastos o gastos fijos del mes para calcular el punto de equilibrio.',
+      noMargin: 'Sin margen de contribución no hay punto de equilibrio: se vende al costo o con pérdida.',
+      ratio: (p: string) => `Margen de contribución: ${p} % de cada venta`,
+    },
+    abc: {
+      title: 'Pareto: clasificación ABC',
+      theory:
+        'Principio de Pareto (regla 80/20): pocos productos dejan casi toda la ganancia. Clase A: los que juntos dejan el 80 % de la ganancia (cuídalos, que nunca falten). Clase B: el siguiente 15 %. Clase C: el último 5 % (revisa si vale la pena el espacio y el capital).',
+      summary: (a: number, total: number, p: string) => `${a} de ${total} productos (clase A) dejan el ${p} % de la ganancia.`,
+      classes: { A: 'Clase A', B: 'Clase B', C: 'Clase C' } as Record<string, string>,
+    },
+    bcg: {
+      title: 'Matriz BCG',
+      theory:
+        'Matriz del Boston Consulting Group, adaptada al puesto. Eje horizontal: cuánta de tu ganancia deja el producto (alto si deja más que el promedio). Eje vertical: si sus ventas crecen o bajan frente al periodo anterior. Estrella: deja mucho y crece. Vaca lechera: deja mucho pero ya no crece (mantenla, no inviertas de más). Interrogante: deja poco pero crece (obsérvala). Perro: deja poco y no crece (candidato a dejar de traer).',
+      xLabel: 'Parte de la ganancia',
+      yLabel: 'Crecimiento',
+      quadrants: ['Interrogante', 'Estrella', 'Perro', 'Vaca lechera'] as [string, string, string, string],
+      names: { star: 'Estrella', cash_cow: 'Vaca lechera', question: 'Interrogante', dog: 'Perro' } as Record<string, string>,
+      detail: (share: string, growth: string) => `${share} % de la ganancia · ${growth}`,
+      growth: (p: string) => `ventas ${p} vs periodo anterior`,
+      isNew: 'nuevo (sin ventas antes)',
+      needPeriod: 'Elige 7 o 30 días para comparar con el periodo anterior.',
+      counts: (star: number, cow: number, q: number, dog: number) =>
+        `${star} estrella · ${cow} vaca lechera · ${q} interrogante · ${dog} perro`,
+    },
+    gmroi: {
+      title: 'Rendimiento del stock (GMROI y rotación)',
+      theory:
+        'GMROI (retorno del margen bruto sobre la inversión en inventario): cuántos soles de ganancia al año deja cada sol invertido en stock. Menos de 1 significa que la plata en ese producto rinde poco. Rotación: cuántas veces al año se vende y se repone todo el stock.',
+      value: (g: string) => `Rinde S/ ${g} al año por cada S/ 1 en stock`,
+      turnover: (n: string) => `rota ${n} veces al año`,
+      low: 'Rinde poco para la plata que tiene parada.',
+      business: (g: string, n: string) => `Todo tu stock rinde S/ ${g} al año por cada S/ 1 invertido y rota ${n} veces al año.`,
+      noStock: 'Sin stock registrado.',
+    },
+  },
   expense: {
     title: 'Registrar gasto',
     amount: 'Monto',

@@ -32,4 +32,13 @@ test('ganancias de hoy con gastos y rentabilidad por producto', async ({ page })
   await page.getByRole('button', { name: /Para revisar/ }).click();
   await page.getByRole('button', { name: '7 días' }).click();
   await expect(page.getByRole('img', { name: 'Ganancia neta por día' })).toBeVisible();
+
+  // Análisis económico.
+  await expect(page.getByTestId('break-even')).toContainText('Necesitas vender');
+  await expect(page.getByTestId('abc')).toContainText('clase A');
+  await expect(page.getByTestId('bcg')).toContainText('estrella');
+  await expect(page.getByRole('img', { name: 'Matriz BCG' })).toBeVisible();
+  await page.getByTestId('abc').getByRole('button', { name: '¿Qué es?' }).click();
+  await expect(page.getByTestId('abc')).toContainText('regla 80/20');
+  await expect(page.getByTestId('gmroi')).toContainText('rota');
 });

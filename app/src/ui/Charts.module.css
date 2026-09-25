@@ -1,0 +1,173 @@
+.figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.readout {
+  min-height: 20px;
+  font-size: 13px;
+}
+.hint {
+  color: var(--ink-soft);
+}
+.svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+/* Medidor */
+.meter {
+  margin: 0;
+  padding-bottom: 18px;
+}
+.meterTrack {
+  position: relative;
+  height: 14px;
+  border-radius: 7px;
+  background: var(--paper-line);
+}
+.meterFill {
+  height: 100%;
+  border-radius: 7px;
+}
+.fillGood {
+  background: var(--leaf);
+}
+.fillBad {
+  background: var(--brick);
+}
+.meterTarget {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 3px;
+  margin-left: -1.5px;
+  background: var(--ink);
+  border-radius: 2px;
+}
+.meterLabels {
+  position: relative;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.meterTargetLabel {
+  position: absolute;
+  top: 18px;
+  white-space: nowrap;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+/* Pareto */
+.pareto {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.paretoRow {
+  width: 100%;
+  min-height: 34px;
+  display: grid;
+  grid-template-columns: 34% 1fr auto;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: none;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  text-align: left;
+}
+.paretoActive {
+  background: var(--paper);
+}
+.paretoName {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.paretoTrack {
+  height: 12px;
+}
+.paretoBar {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  border-radius: 0 4px 4px 0;
+}
+.barA {
+  background: var(--leaf);
+}
+.barOther {
+  background: var(--ink-soft);
+  opacity: 0.45;
+}
+.paretoValue {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.cls {
+  display: inline-block;
+  min-width: 18px;
+  text-align: center;
+  border: 1.5px solid currentColor;
+  border-radius: 4px;
+  margin-left: 4px;
+  font-family: var(--font-display);
+}
+
+/* Dispersión BCG */
+.quadLine {
+  stroke: var(--ink-soft);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+.quadText {
+  font-size: 10px;
+  font-weight: 700;
+  fill: var(--ink-soft);
+  font-family: var(--font-display);
+}
+.axisText {
+  font-size: 10px;
+  fill: var(--ink-soft);
+  font-family: var(--font-display);
+}
+.tick {
+  font-size: 9px;
+  fill: var(--ink-soft);
+  font-family: var(--font-mono);
+}
+.dot {
+  cursor: pointer;
+  outline: none;
+}
+.dotMark {
+  fill: var(--leaf);
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+.dotNew {
+  fill: var(--gold-dark);
+}
+.dot:focus-visible .dotMark {
+  stroke: var(--ink);
+}
+.dotLabel {
+  font-size: 10px;
+  font-weight: 600;
+  fill: var(--ink);
+  font-family: var(--font-display);
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 3px;
+}

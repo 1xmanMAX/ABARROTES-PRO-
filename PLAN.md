@@ -47,6 +47,7 @@ Chart.js entra en la Fase 5 (Estadísticas), con carga diferida.
 | Ajustes de venta rápida: rebaja por regateo, lista al cobrar, avisos de precio | **Hecha, esperando tu OK** |
 | 3. Clientes/vendedores, código personal, fiado, cobro de deudas, comprobante | **Hecha, esperando tu OK** |
 | Ganancias de hoy y rentabilidad (parte de la Fase 5) | **Hecha, esperando tu OK** |
+| Análisis económico: equilibrio, Pareto ABC, BCG, GMROI | **Hecha, esperando tu OK** |
 | 4. Consignación: entregar y liquidar | pendiente |
 | 5. Caja, compras, gastos, estadísticas, inicio | pendiente |
 | 6. Respaldo, ESC/POS Bluetooth, nube (opcional) | pendiente |
@@ -122,6 +123,35 @@ Puedes cambiar cualquiera de estas decisiones.
 6. **Retiros del dueño** no cuentan como gasto (llegan con Caja, Fase 5).
 7. **Qué cuenta como venta:** ventas pagadas y fiadas; las anuladas no cuentan. La ganancia usa el costo que tenía el producto al momento de vender.
 8. **Gráficos:** en el gráfico diario, ganar o perder se ve por la posición de la barra (arriba o abajo del cero) y por el signo del monto, no solo por el color (verde y rojo se confunden con daltonismo). Cada barra se puede tocar, y hay vista de tabla.
+
+## Análisis económico (en Rentabilidad)
+
+Cada indicador tiene su gráfico y un botón "¿Qué es?" con la explicación simple.
+
+1. **Punto de equilibrio** (análisis costo-volumen-utilidad):
+   - Ventas de equilibrio = gastos ÷ razón de margen de contribución.
+   - Margen de contribución = (venta − costo de la mercadería) ÷ venta.
+   - Los gastos incluyen los gastos fijos repartidos y los gastos registrados.
+   - Muestra cuánto hay que vender al día para no perder, cuánto se vende en promedio y el **margen de seguridad**: cuánto pueden bajar las ventas antes de perder.
+   - Gráfico: medidor (venta promedio frente a la marca de equilibrio).
+2. **Pareto / clasificación ABC** (regla 80/20):
+   - Clase A: los productos que juntos dejan el 80 % de la ganancia. Clase B: el siguiente 15 %. Clase C: el resto.
+   - La clase se decide por dónde empieza cada producto en el acumulado.
+   - Gráfico: barras ordenadas. La clase A va en verde y el resto en gris, con la letra siempre escrita. No usa doble eje.
+3. **Matriz BCG** (Boston Consulting Group), **adaptada**:
+   - En la matriz original, el eje horizontal es la participación de mercado frente al competidor más grande y el vertical es el crecimiento del mercado. Un puesto no tiene esos datos, así que se usan los propios:
+     - Horizontal: la parte de la ganancia que deja el producto (alta si deja más que el promedio, 1 ÷ n.º de productos).
+     - Vertical: el crecimiento de sus ventas frente al periodo anterior de igual largo.
+   - Cuadrantes: Estrella, Vaca lechera, Interrogante y Perro.
+   - Solo en 7 o 30 días (hace falta un periodo anterior). Un producto sin ventas antes cuenta como "nuevo" y va arriba.
+   - Gráfico: puntos en 4 cuadrantes; tocar un punto muestra el detalle.
+4. **GMROI y rotación de inventario** (comercio minorista):
+   - GMROI = margen bruto anualizado ÷ stock a costo.
+   - Rotación = costo de lo vendido anualizado ÷ stock a costo.
+   - Menos de 1 en GMROI se marca como "rinde poco".
+   - **Aproximación:** se usa el stock actual en lugar del stock promedio, porque la app todavía no guarda el stock de cada día.
+   - Tabla por producto y resumen del negocio.
+5. **En la lista de productos**, cada producto muestra su clase ABC y su cuadrante BCG. Al tocarlo se ven también el GMROI y la rotación.
 
 ## Propuestas (no implementadas; necesito tu decisión)
 

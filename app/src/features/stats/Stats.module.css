@@ -217,3 +217,84 @@
   background: var(--cover);
   color: var(--cover-ink);
 }
+.econHeading {
+  margin: 8px 0 0;
+  font-size: 18px;
+  font-weight: 800;
+}
+.econTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+}
+.theoryBtn {
+  border: 1.5px solid var(--paper-line);
+  background: var(--paper);
+  border-radius: 999px;
+  min-height: 36px;
+  padding: 0 12px;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.theory {
+  font-size: 13px;
+  line-height: 1.45;
+  background: var(--paper);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  margin: 8px 0;
+}
+.econLead {
+  font-weight: 700;
+  font-size: 15px;
+  margin: 8px 0;
+}
+.good {
+  color: var(--leaf);
+  font-weight: 700;
+  margin: 6px 0;
+  font-size: 14px;
+}
+.bad {
+  color: var(--brick);
+  font-weight: 700;
+  margin: 6px 0;
+  font-size: 14px;
+}
+.econTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 6px;
+}
+.econTable th {
+  text-align: left;
+  font-size: 11px;
+  color: var(--ink-soft);
+  padding: 4px 0;
+}
+.econTable th:not(:first-child),
+.econTable td:not(:first-child) {
+  text-align: right;
+}
+.econTable td {
+  padding: 5px 0;
+  border-bottom: 1px dashed var(--paper-line);
+}
+.rowBad td {
+  color: var(--brick);
+}
+.tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--paper-line);
+  color: var(--ink);
+}
