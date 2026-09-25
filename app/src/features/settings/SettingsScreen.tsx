@@ -3,6 +3,7 @@ import { recomputeGridOrder, useSettings } from '../../app/data';
 import { seedDemo } from '../../db/seed';
 import { refreshStats } from '../../app/stats';
 import { updateSettings } from '../../db/settings';
+import { centsToInput, parseSolesToCents } from '../../domain/money';
 import { setOwnerPin } from '../../db/pins';
 import { PinCreate } from '../../ui/PinCreate';
 import { Sheet } from '../../ui/Sheet';
@@ -21,6 +22,7 @@ export default function SettingsScreen() {
   const settings = useSettings();
   const [shopName, setShopName] = useState(settings.shopName);
   const [footer, setFooter] = useState(settings.receiptFooter);
+  const [fixed, setFixed] = useState(settings.fixedMonthlyCosts ? centsToInput(settings.fixedMonthlyCosts) : '');
   const [persisted, setPersisted] = useState<boolean | null>(null);
   const [changingPin, setChangingPin] = useState<string | null>(null);
   const [askOwner, ownerSheet] = useOwnerPin();
@@ -61,6 +63,23 @@ export default function SettingsScreen() {
         <label className={s.field}>
           {t.settings.receiptFooter}
           <input className={s.input} value={footer} onChange={(e) => setFooter(e.target.value)} onBlur={saveTexts} />
+        </label>
+
+        <label className={s.field}>
+          {t.settings.fixedCosts}
+          <input
+            className={`${s.input} mono`}
+            inputMode="decimal"
+            value={fixed}
+            placeholder="0.00"
+            onChange={(e) => setFixed(e.target.value)}
+            onBlur={() => {
+              const v = parseSolesToCents(fixed || '0');
+              if (v === null) return toast(t.errors.invalidAmount, 'error');
+              void updateSettings({ fixedMonthlyCosts: v }).then(() => toast(t.settings.saved, 'success'));
+            }}
+          />
+          <span className={s.muted}>{t.settings.fixedCostsHint}</span>
         </label>
 
         <div className={s.field}>

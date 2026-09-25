@@ -46,6 +46,7 @@ Chart.js entra en la Fase 5 (Estadísticas), con carga diferida.
 | 2. Predicción "Siguiente probable" y orden por popularidad | Hecha y aprobada |
 | Ajustes de venta rápida: rebaja por regateo, lista al cobrar, avisos de precio | **Hecha, esperando tu OK** |
 | 3. Clientes/vendedores, código personal, fiado, cobro de deudas, comprobante | **Hecha, esperando tu OK** |
+| Ganancias de hoy y rentabilidad (parte de la Fase 5) | **Hecha, esperando tu OK** |
 | 4. Consignación: entregar y liquidar | pendiente |
 | 5. Caja, compras, gastos, estadísticas, inicio | pendiente |
 | 6. Respaldo, ESC/POS Bluetooth, nube (opcional) | pendiente |
@@ -97,6 +98,30 @@ Puedes cambiar cualquiera de estas decisiones.
 7. **El sello del comprobante** va debajo de los montos para no taparlos (en el mockup está encima).
 8. **Datos de ejemplo:** Rosa Mamani (cliente, límite S/ 1,000) y Juan Quispe (cliente y vendedor, límite S/ 800), los dos con el código 2580.
 9. **Nota de seguridad:** 4 dígitos son 10 000 combinaciones. La protección viene del bloqueo por intentos y de que la firma ocurre delante del dueño. No protege contra alguien que copie el archivo de la base de datos. Nunca se guarda el código, solo su hash.
+
+## Ganancias y rentabilidad (pedido del dueño, adelantado de la Fase 5)
+
+1. **Ganancias de hoy** (menú): ganancia del día después de gastos, lo vendido, la ganancia bruta (venta − costo de lo vendido), los gastos, el n.º de ventas y las rebajas dadas. Incluye la comparación con ayer, los gastos del día y lo que más ganancia dejó.
+2. **Rentabilidad** (menú), en 7 días, 30 días o todo:
+   - Una frase clara de si el negocio es rentable, comparada con el periodo anterior.
+   - Una tarjeta con lo vendido, la ganancia bruta, los gastos y la ganancia neta.
+   - Un gráfico de ganancia neta por día (por mes si el periodo es largo).
+   - La lista de productos con veredicto.
+3. **Veredicto por producto** (uno por producto, en este orden):
+   - **Sin costo:** no tiene costo en Inventario, así que su ganancia no es real.
+   - **Pierde:** se vendió con ganancia 0 o negativa.
+   - **Sin ventas:** tiene stock pero no se vendió; muestra la plata parada.
+   - **Margen bajo:** deja menos del 5 %.
+   - **Se mueve lento:** tiene stock para más de 60 días.
+   - **Estrella:** está entre los que juntos dejan la mitad de la ganancia.
+   - **Bien:** el resto.
+
+   Al tocar un producto se ve el consejo, los días de stock y el capital en stock.
+4. **Gastos:** se registran con un toque (transporte, estiba, bolsas, comida, servicios, otros), en efectivo o Yape, y se anulan con motivo si hubo error.
+5. **Gastos fijos del mes** (Ajustes): alquiler del puesto, luz, ayudante… Se reparten por día (mes de 30 días) para que la ganancia de cada día sea real. No hay que registrarlos además como gasto.
+6. **Retiros del dueño** no cuentan como gasto (llegan con Caja, Fase 5).
+7. **Qué cuenta como venta:** ventas pagadas y fiadas; las anuladas no cuentan. La ganancia usa el costo que tenía el producto al momento de vender.
+8. **Gráficos:** en el gráfico diario, ganar o perder se ve por la posición de la barra (arriba o abajo del cero) y por el signo del monto, no solo por el color (verde y rojo se confunden con daltonismo). Cada barra se puede tocar, y hay vista de tabla.
 
 ## Propuestas (no implementadas; necesito tu decisión)
 

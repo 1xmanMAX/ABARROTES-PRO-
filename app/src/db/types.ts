@@ -118,9 +118,12 @@ export interface CashMovement {
   refType: string | null;
   refId: string | null;
   note: string;
+  /** Solo en gastos: alquiler, transporte… */
+  category?: string;
   dayKey: string;
   createdAt: number;
   voidedAt: number | null;
+  voidReason?: string | null;
 }
 
 export interface AuditEntry {
@@ -144,6 +147,8 @@ export interface Settings {
   openingCash: Cents;
   /** Código de dueño (SPEC §9.5). Se crea en el primer arranque. */
   ownerPin: PinRecord | null;
+  /** Gastos fijos del mes (alquiler del puesto, luz, sueldos…), repartidos por día. */
+  fixedMonthlyCosts: Cents;
   /** Rebaja máxima por regateo por ticket. */
   maxHaggle: Cents;
   theme: ThemePref;

@@ -10,7 +10,9 @@ export type Route =
   | { name: 'parties' }
   | { name: 'party'; id: string }
   | { name: 'partyEdit'; id: string | null }
-  | { name: 'voucher'; signatureId: string };
+  | { name: 'voucher'; signatureId: string }
+  | { name: 'today' }
+  | { name: 'profit' };
 
 interface NavState {
   stack: Route[];

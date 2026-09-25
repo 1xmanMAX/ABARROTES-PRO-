@@ -34,3 +34,30 @@ const displayFmt = new Intl.DateTimeFormat('es-PE', {
 export function formatDateTime(epochMs: number): string {
   return displayFmt.format(new Date(epochMs));
 }
+
+/** Los últimos `n` días (hora de Lima), del más antiguo a hoy. */
+export function lastDayKeys(n: number, now: number): string[] {
+  const noon = Date.parse(`${dayKeyOf(now)}T12:00:00-05:00`);
+  return Array.from({ length: n }, (_, i) => dayKeyOf(noon - (n - 1 - i) * 86_400_000));
+}
+
+/** Días entre dos dayKey, contando ambos. */
+export function daysBetween(fromKey: string, toKey: string): number {
+  return Math.round((Date.parse(`${toKey}T12:00:00-05:00`) - Date.parse(`${fromKey}T12:00:00-05:00`)) / 86_400_000) + 1;
+}
+
+const timeFmt = new Intl.DateTimeFormat('es-PE', { timeZone: SHOP_TIME_ZONE, hour: '2-digit', minute: '2-digit' });
+export function formatTime(epochMs: number): string {
+  return timeFmt.format(new Date(epochMs));
+}
+
+const shortDayFmt = new Intl.DateTimeFormat('es-PE', {
+  timeZone: SHOP_TIME_ZONE,
+  weekday: 'short',
+  day: '2-digit',
+  month: '2-digit',
+});
+/** 'YYYY-MM-DD' → "jue., 25/09". */
+export function formatDayKey(dayKey: string): string {
+  return shortDayFmt.format(new Date(Date.parse(`${dayKey}T12:00:00-05:00`)));
+}

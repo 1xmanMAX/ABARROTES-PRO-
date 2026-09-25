@@ -12,6 +12,7 @@ export const DEFAULT_SETTINGS: Settings = {
   openingCash: 0,
   maxHaggle: DEFAULT_MAX_HAGGLE,
   ownerPin: null,
+  fixedMonthlyCosts: 0,
   theme: 'light',
   lastBackupAt: null,
 };
