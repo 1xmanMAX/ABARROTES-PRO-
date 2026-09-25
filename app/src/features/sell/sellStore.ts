@@ -10,6 +10,7 @@ import {
 } from '../../domain/multiplier';
 import type { Qty } from '../../domain/qty';
 import {
+  checkoutOnCredit,
   checkoutTicket,
   discardEmptyTicket,
   loadOpenTickets,
@@ -19,7 +20,7 @@ import {
   saveOpenTicketLines,
   type Payment,
 } from '../../db/tickets';
-import type { Ticket } from '../../db/types';
+import type { Signature, Ticket } from '../../db/types';
 import { recomputeIfNewDay } from '../../app/data';
 import { refreshStats } from '../../app/stats';
 
@@ -46,6 +47,8 @@ interface SellState {
   undo: () => void;
   pressMultiplier: (v: MultiplierValue) => void;
   checkout: (payment: Payment) => Promise<Ticket>;
+  /** Venta al fiado firmada (SPEC §6). Devuelve la firma para el comprobante. */
+  checkoutCredit: (partyId: string, pin: string, opts: { ownerPin?: string; haggle?: number }) => Promise<Signature>;
 }
 
 // ---- guardado en segundo plano (no bloquea la UI) ----
@@ -167,19 +170,33 @@ export const useSell = create<SellState>((set, get) => {
       if (!id) throw new Error('Sin ticket activo');
       await flushTicket(id);
       const closed = await checkoutTicket(id, payment);
-      const before = get().tickets;
-      const idx = before.findIndex((t) => t.id === id);
-      let rest = before.filter((t) => t.id !== id);
-      if (rest.length === 0) {
-        const t = await openTicket();
-        rest = [toOpen(t, [])];
-      }
-      const nextActive = rest[Math.min(Math.max(idx, 0), rest.length - 1)]!;
-      set({ tickets: rest, activeId: nextActive.id, multiplier: MULTIPLIER_DEFAULT });
-      void afterSalesChange();
+      await removeClosed(id);
       return closed;
     },
+
+    checkoutCredit: async (partyId, pin, opts) => {
+      const id = get().activeId;
+      if (!id) throw new Error('Sin ticket activo');
+      await flushTicket(id);
+      const { signature } = await checkoutOnCredit(id, partyId, pin, opts);
+      await removeClosed(id);
+      return signature;
+    },
   };
+
+  /** Quita el ticket cerrado y deja activo el siguiente (o uno nuevo vacío). */
+  async function removeClosed(id: string) {
+    const before = get().tickets;
+    const idx = before.findIndex((t) => t.id === id);
+    let rest = before.filter((t) => t.id !== id);
+    if (rest.length === 0) {
+      const t = await openTicket();
+      rest = [toOpen(t, [])];
+    }
+    const nextActive = rest[Math.min(Math.max(idx, 0), rest.length - 1)]!;
+    set({ tickets: rest, activeId: nextActive.id, multiplier: MULTIPLIER_DEFAULT });
+    void afterSalesChange();
+  }
 });
 
 const NO_TICKET: OpenTicket = { ...EMPTY_CART, id: '', label: '' };

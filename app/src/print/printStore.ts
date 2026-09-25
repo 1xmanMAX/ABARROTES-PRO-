@@ -1,15 +1,21 @@
 import { create } from 'zustand';
-import type { Ticket, TicketLine } from '../db/types';
+import type { Signature, Ticket, TicketLine } from '../db/types';
+
+export type PrintJob =
+  | { kind: 'ticket'; ticket: Ticket; lines: TicketLine[]; nonce: number }
+  | { kind: 'voucher'; signature: Signature; nonce: number };
 
 interface PrintState {
-  job: { ticket: Ticket; lines: TicketLine[]; nonce: number } | null;
+  job: PrintJob | null;
   print: (ticket: Ticket, lines: TicketLine[]) => void;
+  printVoucher: (signature: Signature) => void;
 }
 
 let nonce = 0;
 
-/** El ticket ya está guardado cuando se llama; la impresión no bloquea la venta. */
+/** Lo que se imprime ya está guardado cuando se llama; la impresión no bloquea la venta. */
 export const usePrint = create<PrintState>((set) => ({
   job: null,
-  print: (ticket, lines) => set({ job: { ticket, lines, nonce: ++nonce } }),
+  print: (ticket, lines) => set({ job: { kind: 'ticket', ticket, lines, nonce: ++nonce } }),
+  printVoucher: (signature) => set({ job: { kind: 'voucher', signature, nonce: ++nonce } }),
 }));

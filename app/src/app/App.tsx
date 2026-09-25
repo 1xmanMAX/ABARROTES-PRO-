@@ -7,17 +7,26 @@ import { useSell } from '../features/sell/sellStore';
 import { useSettings } from './data';
 import { bootstrap } from './bootstrap';
 import { currentRoute, installBackHandler, useNav } from './nav';
+import { OwnerSetup } from './OwnerSetup';
 
 const loaders = {
   inventory: () => import('../features/inventory/InventoryScreen'),
   product: () => import('../features/inventory/ProductScreen'),
   history: () => import('../features/history/HistoryScreen'),
   settings: () => import('../features/settings/SettingsScreen'),
+  parties: () => import('../features/parties/PartiesScreen'),
+  party: () => import('../features/parties/PartyScreen'),
+  partyEdit: () => import('../features/parties/PartyEditScreen'),
+  voucher: () => import('../features/parties/VoucherScreen'),
 };
 const InventoryScreen = lazy(loaders.inventory);
 const ProductScreen = lazy(loaders.product);
 const HistoryScreen = lazy(loaders.history);
 const SettingsScreen = lazy(loaders.settings);
+const PartiesScreen = lazy(loaders.parties);
+const PartyScreen = lazy(loaders.party);
+const PartyEditScreen = lazy(loaders.partyEdit);
+const VoucherScreen = lazy(loaders.voucher);
 
 export function App() {
   const [ready, setReady] = useState(false);
@@ -48,6 +57,8 @@ export function App() {
 
   if (error) return <p style={{ padding: 16 }}>No se pudo abrir la base de datos: {error}</p>;
   if (!ready || !loaded) return null;
+  // SPEC §9.5: el código de dueño se crea en el primer arranque.
+  if (!settings.ownerPin) return <OwnerSetup />;
 
   return (
     <>
@@ -61,6 +72,10 @@ export function App() {
         {route.name === 'product' && <ProductScreen id={route.id} />}
         {route.name === 'history' && <HistoryScreen />}
         {route.name === 'settings' && <SettingsScreen />}
+        {route.name === 'parties' && <PartiesScreen />}
+        {route.name === 'party' && <PartyScreen id={route.id} />}
+        {route.name === 'partyEdit' && <PartyEditScreen id={route.id} />}
+        {route.name === 'voucher' && <VoucherScreen signatureId={route.signatureId} />}
       </Suspense>
       <ToastHost />
       <ReceiptPrinter />

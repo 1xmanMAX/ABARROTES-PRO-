@@ -9,6 +9,7 @@ import type { Ticket } from '../../db/types';
 import { t } from '../../i18n/es-PE';
 import { usePrint } from '../../print/printStore';
 import { afterSalesChange } from '../sell/sellStore';
+import { useOwnerPin } from '../parties/usePin';
 import { Button } from '../../ui/Button';
 import { ScreenHeader } from '../../ui/ScreenHeader';
 import { Sheet } from '../../ui/Sheet';
@@ -67,16 +68,22 @@ function TicketDetail({ ticketId, onClose }: { ticketId: string; onClose: () => 
   const data = useLiveQuery(() => getTicketWithLines(ticketId), [ticketId]);
   const [voiding, setVoiding] = useState(false);
   const [reason, setReason] = useState('');
+  const [askOwner, ownerSheet] = useOwnerPin();
   if (!data) return null;
   const { ticket, lines } = data;
   const isToday = ticket.dayKey === dayKeyOf(Date.now());
 
+  const finishVoid = async (ownerPin?: string) => {
+    await voidTicket(ticket.id, reason, ownerPin);
+    void afterSalesChange();
+    toast(t.history.voided, 'success');
+    setVoiding(false);
+  };
   const doVoid = async () => {
+    // Ventas de días anteriores: código de dueño (SPEC §9.5).
+    if (!isToday) return askOwner(t.history.ownerVoid(String(ticket.number).padStart(4, '0')), finishVoid);
     try {
-      await voidTicket(ticket.id, reason);
-      void afterSalesChange();
-      toast(t.history.voided, 'success');
-      setVoiding(false);
+      await finishVoid();
     } catch (err) {
       toastError(err);
     }
@@ -106,18 +113,19 @@ function TicketDetail({ ticketId, onClose }: { ticketId: string; onClose: () => 
             <Button variant="primary" block onClick={() => usePrint.getState().print(ticket, lines)}>
               {t.history.reprint}
             </Button>
-            {ticket.status === 'paid' &&
-              (isToday ? (
+            {(ticket.status === 'paid' || ticket.status === 'credit') && (
+              <>
+                {!isToday && <p className={s.muted}>{t.history.ownerOnly}</p>}
                 <Button variant="danger" block onClick={() => setVoiding(true)}>
                   {t.history.void}
                 </Button>
-              ) : (
-                <p className={s.muted}>{t.history.ownerOnly}</p>
-              ))}
+              </>
+            )}
           </>
         )
       }
     >
+      {ownerSheet}
       <TicketSummary ticket={ticket} />
       {lines.map((l) => (
         <div key={l.id} className={styles.line}>

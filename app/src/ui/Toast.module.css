@@ -18,6 +18,8 @@
   font-weight: 600;
   font-size: 14px;
   animation: pop 140ms ease-out;
+  /* No tapa los botones de abajo: solo "Deshacer" recibe toques. */
+  pointer-events: none;
 }
 .error {
   background: var(--brick);
@@ -31,6 +33,7 @@
   flex: 1;
 }
 .action {
+  pointer-events: auto;
   min-height: var(--tap-min);
   padding: 0 14px;
   border: 1.5px solid var(--gold);

@@ -11,6 +11,7 @@ export const DEFAULT_SETTINGS: Settings = {
   gridOrderComputedAt: null,
   openingCash: 0,
   maxHaggle: DEFAULT_MAX_HAGGLE,
+  ownerPin: null,
   theme: 'light',
   lastBackupAt: null,
 };

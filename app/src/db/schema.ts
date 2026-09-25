@@ -1,6 +1,17 @@
 import Dexie, { type EntityTable, type Transaction } from 'dexie';
 import { replayStats, type PairStat, type ProductStat } from '../domain/stats';
-import type { AuditEntry, CashMovement, Product, Settings, StockMovement, Ticket, TicketLine } from './types';
+import type {
+  AuditEntry,
+  CashMovement,
+  LedgerEntry,
+  Party,
+  Product,
+  Settings,
+  Signature,
+  StockMovement,
+  Ticket,
+  TicketLine,
+} from './types';
 
 export class BodegaDB extends Dexie {
   products!: EntityTable<Product, 'id'>;
@@ -12,6 +23,9 @@ export class BodegaDB extends Dexie {
   settings!: EntityTable<Settings, 'id'>;
   productStats!: EntityTable<ProductStat, 'productId'>;
   pairStats!: EntityTable<PairStat, 'key'>;
+  parties!: EntityTable<Party, 'id'>;
+  ledgerEntries!: EntityTable<LedgerEntry, 'id'>;
+  signatures!: EntityTable<Signature, 'id'>;
 
   constructor(name = 'mi-bodega') {
     super(name);
@@ -33,6 +47,13 @@ export class BodegaDB extends Dexie {
         pairStats: 'key, a, b',
       })
       .upgrade((tx) => rebuildStatsIn(tx));
+    // Fase 3: personas, cuenta corriente y firmas.
+    this.version(3).stores({
+      parties: 'id, name, active, lastUsedAt',
+      ledgerEntries: 'id, partyId, createdAt, [sourceType+sourceId]',
+      signatures: 'id, partyId, &operationCode, createdAt, [refType+refId]',
+      auditLog: 'id, entity, entityId, action, createdAt',
+    });
   }
 }
 

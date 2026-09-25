@@ -3,6 +3,10 @@ import { recomputeGridOrder, useSettings } from '../../app/data';
 import { seedDemo } from '../../db/seed';
 import { refreshStats } from '../../app/stats';
 import { updateSettings } from '../../db/settings';
+import { setOwnerPin } from '../../db/pins';
+import { PinCreate } from '../../ui/PinCreate';
+import { Sheet } from '../../ui/Sheet';
+import { useOwnerPin } from '../parties/usePin';
 import type { ThemePref } from '../../db/types';
 import { t } from '../../i18n/es-PE';
 import { Button } from '../../ui/Button';
@@ -18,6 +22,8 @@ export default function SettingsScreen() {
   const [shopName, setShopName] = useState(settings.shopName);
   const [footer, setFooter] = useState(settings.receiptFooter);
   const [persisted, setPersisted] = useState<boolean | null>(null);
+  const [changingPin, setChangingPin] = useState<string | null>(null);
+  const [askOwner, ownerSheet] = useOwnerPin();
 
   useEffect(() => {
     navigator.storage?.persisted?.().then(setPersisted, () => setPersisted(false));
@@ -108,6 +114,15 @@ export default function SettingsScreen() {
         </Button>
         <p className={s.muted}>{t.settings.demoHint}</p>
 
+        <Button block onClick={() => askOwner(t.pin.ownerCurrent, async (pin) => setChangingPin(pin))}>
+          {t.settings.changeOwnerPin}
+        </Button>
+
+        <div className={s.card}>
+          <div className={s.label}>{t.settings.help}</div>
+          <div className={s.muted}>{t.settings.helpText}</div>
+        </div>
+
         <div className={s.card}>
           <div className={s.label}>{t.settings.storage}</div>
           <div className={s.muted}>{persisted ? t.settings.storageOn : t.settings.storageOff}</div>
@@ -116,6 +131,20 @@ export default function SettingsScreen() {
           {t.settings.version} {__APP_VERSION__}
         </p>
       </div>
+      {ownerSheet}
+      {changingPin && (
+        <Sheet title={t.settings.changeOwnerPin} onClose={() => setChangingPin(null)}>
+          <PinCreate
+            title={t.pin.ownerNew}
+            hint={t.pin.ownerHint}
+            onCreate={async (pin) => {
+              await setOwnerPin(pin, changingPin);
+              toast(t.pin.ownerChanged, 'success');
+              setChangingPin(null);
+            }}
+          />
+        </Sheet>
+      )}
     </div>
   );
 }

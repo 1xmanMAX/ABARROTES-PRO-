@@ -1,7 +1,24 @@
 import { expect, type Page } from '@playwright/test';
 
-export async function freshWithDemo(page: Page) {
+export const OWNER_PIN = '9753';
+export const DEMO_PIN = '2580';
+
+/** Escribe un código en el teclado PIN visible y toca el botón indicado. */
+export async function typePin(page: Page, pin: string, submit: string | RegExp = 'Firmar') {
+  for (const d of pin) await page.getByRole('button', { name: d, exact: true }).last().click();
+  await page.getByRole('button', { name: submit, exact: typeof submit === 'string' }).last().click();
+}
+
+/** Primer arranque: crear el código de dueño. */
+export async function setupOwner(page: Page) {
   await page.goto('/');
+  await expect(page.getByText('Crea tu código de dueño')).toBeVisible();
+  await typePin(page, OWNER_PIN, 'Aceptar');
+  await typePin(page, OWNER_PIN, 'Guardar');
+}
+
+export async function freshWithDemo(page: Page) {
+  await setupOwner(page);
   await page.getByRole('button', { name: 'Cargar datos de ejemplo' }).click();
   // Con historial cargado aparecen las 3 sugerencias.
   await expect(page.getByTestId('suggestions').getByRole('button')).toHaveCount(3, { timeout: 15_000 });

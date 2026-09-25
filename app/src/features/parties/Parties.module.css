@@ -1,0 +1,114 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 60px;
+  padding: 10px 14px;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  text-align: left;
+  width: 100%;
+}
+.rowActive {
+  border: 3px solid var(--gold);
+}
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.name {
+  font-weight: 700;
+  font-size: 15px;
+}
+.meta {
+  display: flex;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  flex-wrap: wrap;
+}
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--paper-line);
+  color: var(--ink-soft);
+}
+.badgeSeller {
+  background: color-mix(in srgb, var(--gold) 28%, transparent);
+  color: var(--gold-dark);
+}
+.owes {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--brick);
+  white-space: nowrap;
+}
+.balanceCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.balance {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 28px;
+}
+.balanceOwes {
+  color: var(--brick);
+}
+.warn {
+  color: var(--brick);
+  font-weight: 700;
+  font-size: 14px;
+  margin: 0;
+}
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.histRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--paper-line);
+  font-size: 14px;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  text-align: left;
+  width: 100%;
+}
+.histLabel {
+  display: flex;
+  flex-direction: column;
+}
+.histDate {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.charge {
+  color: var(--brick);
+}
+.payment {
+  color: var(--leaf);
+}
+.voided {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+.amountDisplay {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 34px;
+  text-align: center;
+}

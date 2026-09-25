@@ -1,5 +1,7 @@
 import { dayKeyOf } from '../domain/time';
 import { newId } from './ids';
+import { createParty } from './parties';
+import { setPartyPin } from './pins';
 import { createProduct, type ProductInput } from './products';
 import { db } from './schema';
 import { rebuildStats } from './stats';
@@ -218,9 +220,35 @@ export async function seedDemoHistory(ticketCount = 300, now = Date.now()): Prom
   return tickets.length;
 }
 
-/** Productos + historial de ejemplo, solo si el inventario está vacío. */
+/** Personas de ejemplo (DATA_MODEL §7) con el código de prueba 2580. */
+export async function seedDemoParties(): Promise<void> {
+  if ((await db.parties.count()) > 0) return;
+  const rosa = await createParty({
+    name: 'Rosa Mamani',
+    phone: '987654321',
+    roles: ['client'],
+    creditLimit: 100000,
+    birthYear: null,
+  });
+  const juan = await createParty({
+    name: 'Juan Quispe',
+    phone: '912345678',
+    roles: ['client', 'seller'],
+    creditLimit: 80000,
+    birthYear: null,
+  });
+  await setPartyPin(rosa, DEMO_PIN);
+  await setPartyPin(juan, DEMO_PIN);
+}
+
+export const DEMO_PIN = '2580';
+
+/** Productos, personas e historial de ejemplo, solo si el inventario está vacío. */
 export async function seedDemo(): Promise<number> {
   const n = await seedDemoProducts();
-  if (n > 0) await seedDemoHistory();
+  if (n > 0) {
+    await seedDemoHistory();
+    await seedDemoParties();
+  }
   return n;
 }

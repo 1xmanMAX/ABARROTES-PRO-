@@ -1,4 +1,5 @@
 import type { Cents } from '../domain/money';
+import type { PinRecord } from '../domain/pin';
 import type { Qty } from '../domain/qty';
 
 export type ProductUnit = 'saco' | 'caja' | 'bolsa' | 'unidad' | 'kg' | 'litro' | 'paquete';
@@ -41,6 +42,8 @@ export interface Ticket extends Timestamps {
   status: TicketStatus;
   paymentMethod: PaymentMethod | null;
   partyId: string | null;
+  /** Snapshot del nombre de la persona (fiado). */
+  partyName?: string | null;
   subtotal: Cents;
   /** Descuento total: cambios de precio por línea + rebaja por regateo. */
   discount: Cents;
@@ -139,8 +142,72 @@ export interface Settings {
   gridOrder: string[];
   gridOrderComputedAt: number | null;
   openingCash: Cents;
+  /** Código de dueño (SPEC §9.5). Se crea en el primer arranque. */
+  ownerPin: PinRecord | null;
   /** Rebaja máxima por regateo por ticket. */
   maxHaggle: Cents;
   theme: ThemePref;
   lastBackupAt: number | null;
+}
+
+export type PartyRole = 'client' | 'seller';
+
+export interface Party extends Timestamps {
+  id: string;
+  name: string;
+  phone: string;
+  roles: PartyRole[];
+  /** 0 = sin fiado (cualquier deuda nueva pide el código de dueño). */
+  creditLimit: Cents;
+  /** Caché derivado de ledgerEntries (se actualiza en la misma transacción). */
+  balance: Cents;
+  pin: PinRecord | null;
+  /** Para rechazar el año de nacimiento como código. */
+  birthYear: number | null;
+  /** Precios pactados por defecto (vendedores): productId → precio. */
+  specialPrices: Record<string, Cents>;
+  active: boolean;
+  lastUsedAt: number;
+}
+
+export interface LedgerEntry {
+  id: string;
+  partyId: string;
+  type: 'charge' | 'payment' | 'adjustment';
+  /** Siempre positivo en cargos y pagos; con signo en ajustes. */
+  amount: Cents;
+  method: 'cash' | 'digital' | null;
+  sourceType: 'ticket' | 'settlement' | 'manual' | 'payment';
+  sourceId: string | null;
+  signatureId: string | null;
+  note: string;
+  createdAt: number;
+  voidedAt: number | null;
+}
+
+export type SignaturePurpose = 'credit_sale' | 'consignment_receipt' | 'debt_payment' | 'settlement';
+
+export interface SignatureLine {
+  name: string;
+  qty: number;
+  amount: Cents;
+}
+
+export interface Signature {
+  id: string;
+  partyId: string;
+  partyName: string;
+  purpose: SignaturePurpose;
+  amount: Cents;
+  /** Único: MB-MMDD-XXXX. */
+  operationCode: string;
+  /** SHA-256 del payload canónico (DATA_MODEL §5.4). */
+  payloadHash: string;
+  concept: string;
+  lines: SignatureLine[];
+  previousBalance: Cents;
+  newBalance: Cents;
+  refType: string;
+  refId: string;
+  createdAt: number;
 }

@@ -6,7 +6,11 @@ export type Route =
   | { name: 'inventory' }
   | { name: 'product'; id: string | null }
   | { name: 'history' }
-  | { name: 'settings' };
+  | { name: 'settings' }
+  | { name: 'parties' }
+  | { name: 'party'; id: string }
+  | { name: 'partyEdit'; id: string | null }
+  | { name: 'voucher'; signatureId: string };
 
 interface NavState {
   stack: Route[];
@@ -14,6 +18,8 @@ interface NavState {
   back: () => void;
   /** Vuelve a Vender (limpia la pila). */
   home: () => void;
+  /** Reemplaza la pantalla actual (no agrega un paso al botón atrás). */
+  replace: (route: Route) => void;
 }
 
 /**
@@ -29,6 +35,7 @@ export const useNav = create<NavState>((set, get) => ({
   back: () => {
     if (get().stack.length > 1) history.back();
   },
+  replace: (route) => set({ stack: [...get().stack.slice(0, -1), route] }),
   home: () => {
     const extra = get().stack.length - 1;
     if (extra > 0) history.go(-extra);

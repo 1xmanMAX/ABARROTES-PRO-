@@ -43,8 +43,9 @@ Chart.js entra en la Fase 5 (Estadísticas), con carga diferida.
 | Fase | Estado |
 |---|---|
 | 1. Base: BD, inventario, vender, tickets en espera, cobrar (efectivo/Yape), recibo, PWA offline | Hecha y aprobada |
-| 2. Predicción "Siguiente probable" y orden por popularidad | **Hecha, esperando tu OK** |
-| 3. Clientes/vendedores, código personal, fiado, cobro de deudas, comprobante | pendiente |
+| 2. Predicción "Siguiente probable" y orden por popularidad | Hecha y aprobada |
+| Ajustes de venta rápida: rebaja por regateo, lista al cobrar, avisos de precio | **Hecha, esperando tu OK** |
+| 3. Clientes/vendedores, código personal, fiado, cobro de deudas, comprobante | **Hecha, esperando tu OK** |
 | 4. Consignación: entregar y liquidar | pendiente |
 | 5. Caja, compras, gastos, estadísticas, inicio | pendiente |
 | 6. Respaldo, ESC/POS Bluetooth, nube (opcional) | pendiente |
@@ -76,6 +77,26 @@ Puedes cambiar cualquiera de estas decisiones.
 7. **Ventas de la Fase 1:** al actualizar, la migración de la BD (versión 2) reconstruye las estadísticas desde las ventas ya registradas. No se pierde nada.
 8. **Datos de ejemplo:** el botón ahora carga los 10 productos y 300 ventas de los 30 días anteriores (nunca de hoy), con los pares frecuentes de DATA_MODEL §7. El stock final de cada producto no cambia.
 9. **Espacio en pantalla:** con la fila de sugerencias, en un teléfono de 390×844 entran 11 productos y "Buscar" (4 filas).
+
+## Venta rápida y sin errores (pedido del dueño)
+
+1. **Rebaja por regateo:** botones de −S/ 1 a −S/ 5 en Cobrar, un toque. Es una rebaja **por ticket** (el total baja de S/ 1 a S/ 5). Solo aparece si el ticket tiene productos marcados "Admite rebaja por regateo" en Inventario. El máximo se cambia en Ajustes (No, S/ 1… S/ 5). La rebaja se reparte entre esos productos en céntimos exactos, para que la ganancia por producto sea real. Si prefieres que la rebaja sea **por unidad** (por ejemplo S/ 1 por saco), dímelo y lo cambio.
+2. **Lista al cobrar:** Cobrar muestra cada producto con su cantidad en grande, para leérsela al cliente antes de cobrar y no cobrar de menos.
+3. **Cambios de precio peligrosos:** poner un precio por debajo del costo, o bajarlo más que el máximo de rebaja por unidad, pide un segundo toque.
+4. **Avisos que no tapan botones:** los mensajes de abajo ya no bloquean los toques sobre los botones; solo su "Deshacer" responde.
+5. **×10:** se queda como antes: se aplica al siguiente toque de producto.
+
+## Ambigüedades y cómo las resolví (Fase 3)
+
+1. **Código de dueño:** se crea al abrir la app por primera vez (también al actualizar desde una versión anterior). Se pide para: fiado sobre el límite, anular ventas de días anteriores, cambiar o desbloquear el código de una persona, y cambiar el propio código de dueño.
+2. **Límite 0 = sin fiado:** a una persona con límite 0 se le puede fiar solo con el código de dueño.
+3. **Bloqueos:** 3 fallos seguidos bloquean 5 minutos; al llegar a 6 fallos en 24 horas solo el dueño puede desbloquear (en la ficha de la persona).
+4. **Después de un fiado o un cobro** se abre el comprobante sellado (FIADO / PAGADO) con n.º de operación, "Íntegro/Modificado", Imprimir y WhatsApp. "Listo" vuelve a Vender.
+5. **Anular un fiado** repone el stock y quita la deuda (el cargo queda anulado, no borrado).
+6. **Tiempo de firma:** verificar el código tarda cerca de medio segundo a propósito (PBKDF2), para que adivinar códigos sea lento. El teclado muestra "Verificando…".
+7. **El sello del comprobante** va debajo de los montos para no taparlos (en el mockup está encima).
+8. **Datos de ejemplo:** Rosa Mamani (cliente, límite S/ 1,000) y Juan Quispe (cliente y vendedor, límite S/ 800), los dos con el código 2580.
+9. **Nota de seguridad:** 4 dígitos son 10 000 combinaciones. La protección viene del bloqueo por intentos y de que la firma ocurre delante del dueño. No protege contra alguien que copie el archivo de la base de datos. Nunca se guarda el código, solo su hash.
 
 ## Propuestas (no implementadas; necesito tu decisión)
 

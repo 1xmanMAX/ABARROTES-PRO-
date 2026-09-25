@@ -16,16 +16,19 @@ import { Sheet } from '../../ui/Sheet';
 import s from '../../ui/Screen.module.css';
 import { toast, toastError, useToast, vibrate } from '../../ui/toast';
 import { activeTicket, afterSalesChange, useSell } from './sellStore';
+import { CreditPanel } from './CreditPanel';
 import styles from './Checkout.module.css';
 
-type Method = 'cash' | 'digital';
+type Method = 'cash' | 'digital' | 'credit';
 
 export function CheckoutScreen() {
   const products = useProducts();
   const productMap = useProductMap(products);
   const ticket = useSell(activeTicket);
   const checkout = useSell((st) => st.checkout);
+  const checkoutCredit = useSell((st) => st.checkoutCredit);
   const back = useNav((st) => st.back);
+  const replace = useNav((st) => st.replace);
   const settings = useSettings();
   const gross = useMemo(() => cartTotal(ticket.lines, productMap), [ticket.lines, productMap]);
   // Rebaja por regateo: solo sobre productos que la admiten.
@@ -55,7 +58,7 @@ export function CheckoutScreen() {
   const canPay = total > 0 && (method !== 'cash' || change >= 0) && !busy;
 
   const pay = async (print: boolean) => {
-    if (!canPay) return;
+    if (!canPay || method === 'credit') return;
     setBusy(true);
     const payment: Payment =
       method === 'cash'
@@ -162,13 +165,22 @@ export function CheckoutScreen() {
           <button type="button" aria-pressed={method === 'digital'} onClick={() => setMethod('digital')}>
             {t.checkout.digital}
           </button>
-          <button type="button" className={styles.credit} onClick={() => toast(t.checkout.creditSoon)} aria-disabled="true">
+          <button type="button" className={styles.credit} aria-pressed={method === 'credit'} onClick={() => setMethod('credit')}>
             {t.checkout.credit}
-            <small> · {t.common.soon}</small>
           </button>
         </div>
 
-        {method === 'cash' ? (
+        {method === 'credit' ? (
+          <CreditPanel
+            total={total}
+            onSign={async (partyId, pin, ownerPin) => {
+              const sig = await checkoutCredit(partyId, pin, { ownerPin, haggle: effectiveHaggle });
+              vibrate(30);
+              replace({ name: 'voucher', signatureId: sig.id });
+              toast(t.checkout.creditDone(sig.partyName, formatPEN(sig.amount)), 'success');
+            }}
+          />
+        ) : method === 'cash' ? (
           <>
             <div>
               <div className={s.label} style={{ marginBottom: 6 }}>
@@ -230,14 +242,16 @@ export function CheckoutScreen() {
           </label>
         )}
 
-        <div className={styles.actions}>
-          <Button variant="primary" block disabled={!canPay} onClick={() => pay(true)}>
-            {t.checkout.payPrint}
-          </Button>
-          <Button block disabled={!canPay} onClick={() => pay(false)}>
-            {t.checkout.payNoPrint}
-          </Button>
-        </div>
+        {method !== 'credit' && (
+          <div className={styles.actions}>
+            <Button variant="primary" block disabled={!canPay} onClick={() => pay(true)}>
+              {t.checkout.payPrint}
+            </Button>
+            <Button block disabled={!canPay} onClick={() => pay(false)}>
+              {t.checkout.payNoPrint}
+            </Button>
+          </div>
+        )}
       </main>
       {otherOpen && (
         <OtherAmountSheet

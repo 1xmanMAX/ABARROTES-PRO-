@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import { useSettings } from '../app/data';
 import { formatPEN } from '../domain/money';
 import { formatQty } from '../domain/qty';
+import { stampFor } from '../domain/voucher';
+import type { Signature } from '../db/types';
 import { formatDateTime } from '../domain/time';
 import { t } from '../i18n/es-PE';
 import { usePrint } from './printStore';
@@ -22,8 +24,17 @@ export function ReceiptPrinter() {
 
   const root = document.getElementById('print-root');
   if (!job || !root) return null;
-  const { ticket, lines } = job;
   const width = settings.paperWidth;
+  if (job.kind === 'voucher') {
+    return createPortal(
+      <>
+        <style>{`@page { size: ${width}mm auto; margin: 0; }`}</style>
+        <VoucherPrint signature={job.signature} width={width} shopName={settings.shopName} />
+      </>,
+      root,
+    );
+  }
+  const { ticket, lines } = job;
 
   return createPortal(
     <>
@@ -79,10 +90,69 @@ export function ReceiptPrinter() {
             </div>
           </>
         )}
+        {ticket.status === 'credit' && ticket.partyName && (
+          <div className={`${styles.center} ${styles.void}`}>{t.receipt.creditSigned(ticket.partyName)}</div>
+        )}
         <div className={styles.rule} />
         <div className={styles.center}>{settings.receiptFooter}</div>
       </div>
     </>,
     root,
+  );
+}
+
+function VoucherPrint({ signature: sig, width, shopName }: { signature: Signature; width: number; shopName: string }) {
+  const stamp = stampFor(
+    sig.purpose,
+    sig.purpose === 'settlement'
+      ? sig.previousBalance + sig.lines.reduce((a, l) => a + l.amount, 0) - sig.newBalance
+      : sig.amount,
+  );
+  return (
+    <div className={styles.receipt} style={{ width: `${width}mm` }} data-testid="voucher-print">
+      <div className={styles.center}>
+        <div className={styles.shop}>{shopName}</div>
+        <div>{formatDateTime(sig.createdAt)}</div>
+        <div className={styles.total}>*** {t.voucher.stamps[stamp]} ***</div>
+      </div>
+      <div className={styles.rule} />
+      <div className={styles.split}>
+        <span>{t.voucher.party}</span>
+        <span>{sig.partyName}</span>
+      </div>
+      <div className={styles.split}>
+        <span>{t.voucher.concept}</span>
+        <span>{sig.concept}</span>
+      </div>
+      {sig.lines.map((l, i) => (
+        <div key={i} className={styles.split}>
+          <span>
+            {l.name} ×{l.qty}
+          </span>
+          <span>{formatPEN(l.amount)}</span>
+        </div>
+      ))}
+      <div className={styles.split}>
+        <span>{t.voucher.before}</span>
+        <span>{formatPEN(sig.previousBalance)}</span>
+      </div>
+      <div className={`${styles.split} ${styles.total}`}>
+        <span>{t.voucher.amount}</span>
+        <span>{formatPEN(sig.amount)}</span>
+      </div>
+      <div className={styles.split}>
+        <span>{t.voucher.after}</span>
+        <span>{formatPEN(sig.newBalance)}</span>
+      </div>
+      <div className={styles.rule} />
+      <div className={styles.split}>
+        <span>{t.voucher.signedBy}</span>
+        <span>{sig.partyName}</span>
+      </div>
+      <div className={styles.split}>
+        <span>{t.voucher.op}</span>
+        <span>{sig.operationCode}</span>
+      </div>
+    </div>
   );
 }
