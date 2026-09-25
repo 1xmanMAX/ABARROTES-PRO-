@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>V2 — Venta al fiado</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{text-decoration:none}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;overflow:hidden;display:flex;flex-direction:column;background:#F3ECDA;color:#21291F;font-family:'Archivo',system-ui,sans-serif">
+
+<header style="background:#2B4636;color:#F3ECDA;padding:10px 14px;border-bottom:3px solid {{accent}};display:flex;align-items:center;gap:10px;flex-shrink:0">
+  <a href="V2-Cobrar.dc.html" aria-label="Volver" style="width:44px;height:44px;border-radius:8px;background:rgba(255,255,255,0.08);color:#F3ECDA;display:flex;align-items:center;justify-content:center">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </a>
+  <div style="flex:1">
+    <div style="font-weight:700;font-size:17px">Venta al fiado</div>
+    <div style="font-size:12px;color:#C7B98F">S/ 478.00 · Arroz ×2, Aceite ×1</div>
+  </div>
+</header>
+
+<main style="flex:1 1 auto;display:flex;flex-direction:column;gap:10px;padding:12px 14px;box-sizing:border-box;overflow:hidden">
+
+  <div style="font-size:11px;font-weight:700;color:#5C6552;letter-spacing:0.04em">¿A QUIÉN SE LE FÍA?</div>
+
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <button type="button" style="display:flex;justify-content:space-between;align-items:center;min-height:52px;padding:8px 12px;border:3px solid {{accent}};border-radius:10px;background:#FFFDF6;color:#21291F;font-family:'Archivo',sans-serif;text-align:left">
+      <span><span style="display:block;font-weight:700;font-size:14px">Rosa Mamani</span><span style="display:block;font-size:11px;color:#5C6552">Bodega · límite S/ 1,000</span></span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:13px;color:#A24632">debe S/ 240.00</span>
+    </button>
+    <button type="button" style="display:flex;justify-content:space-between;align-items:center;min-height:52px;padding:8px 12px;border:1.5px solid #E1D4AC;border-radius:10px;background:#FFFDF6;color:#21291F;font-family:'Archivo',sans-serif;text-align:left">
+      <span><span style="display:block;font-weight:700;font-size:14px">Juan Quispe</span><span style="display:block;font-size:11px;color:#5C6552">Vendedor · límite S/ 800</span></span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:13px;color:#A24632">debe S/ 152.00</span>
+    </button>
+    <button type="button" style="height:44px;border:1.5px dashed #B9AC84;border-radius:10px;background:transparent;color:#5C6552;font-weight:700;font-size:13px;font-family:'Archivo',sans-serif">+ Nuevo cliente (crea su código)</button>
+  </div>
+
+  <div style="background:#FFFDF6;border:1px solid #E1D4AC;border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between">
+    <span style="font-size:13px;color:#5C6552">Nuevo saldo de Rosa</span>
+    <span style="font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:15px;color:#A24632">S/ 718.00</span>
+  </div>
+
+  <div style="background:#2B4636;border-radius:12px;padding:12px;color:#F3ECDA;display:flex;flex-direction:column;gap:10px">
+    <div style="text-align:center">
+      <div style="font-size:13px;font-weight:700">Rosa confirma la deuda con su código</div>
+      <div style="font-size:11px;color:#C7B98F">Entrégale el teléfono · solo ella lo conoce</div>
+    </div>
+    <div style="display:flex;justify-content:center;gap:14px">
+      <span style="width:16px;height:16px;border-radius:50%;background:{{accent}}"></span>
+      <span style="width:16px;height:16px;border-radius:50%;background:{{accent}}"></span>
+      <span style="width:16px;height:16px;border-radius:50%;border:2px solid {{accent}};box-sizing:border-box"></span>
+      <span style="width:16px;height:16px;border-radius:50%;border:2px solid {{accent}};box-sizing:border-box"></span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px">
+      <button type="button" style="height:46px;border:none;border-radius:8px;background:rgba(255,255,255,0.1);color:#F3ECDA;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:18px">1</button>
+      <button type="button" style="height:46px;border:none;border-radius:8px;background:rgba(255,255,255,0.1);color:#F3ECDA;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:18px">2</button>
+      <button type="button" style="height:46px;border:none;border-radius:8px;background:rgba(255,255,255,0.1);color:#F3ECDA;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:18px">3</button>
+      <button type="button" style="height:46px;border:none;border-radius:8px;background:rgba(255,255,255,0.1);color:#F3ECDA;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:18px">4</button>
+      <button type="button" style="height:46px;border:none;border-radius:8px;background:rgba(255,255,255,0.1);color:#F3ECDA;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:18px">5</button>
+      <button type="button" style="height:46px;border:none;border-radius:8px;background:rgba(255,255,255,0.1);color:#F3ECDA;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:18px">6</button>
+      <button type="button" style="height:46px;border:none;border-radius:8px;background:rgba(255,255,255,0.1);color:#F3ECDA;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:18px">7</button>
+      <button type="button" style="height:46px;border:none;border-radius:8px;background:rgba(255,255,255,0.1);color:#F3ECDA;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:18px">8</button>
+      <button type="button" style="height:46px;border:none;border-radius:8px;background:rgba(255,255,255,0.1);color:#F3ECDA;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:18px">9</button>
+      <button type="button" aria-label="Borrar" style="height:46px;border:none;border-radius:8px;background:transparent;color:#E4C9BC;font-weight:700;font-size:14px;font-family:'Archivo',sans-serif">Borrar</button>
+      <button type="button" style="height:46px;border:none;border-radius:8px;background:rgba(255,255,255,0.1);color:#F3ECDA;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:18px">0</button>
+      <a href="V2-Comprobante.dc.html" style="height:46px;border-radius:8px;background:{{accent}};color:#1D3226;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center">Firmar</a>
+    </div>
+  </div>
+
+</main>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#C89A3E","options":["#C89A3E","#4C7A5D","#2B4636","#A24632"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { accent: this.props.accent ?? '#C89A3E' };
+  }
+}
+</script>
+</body>
+</html>
