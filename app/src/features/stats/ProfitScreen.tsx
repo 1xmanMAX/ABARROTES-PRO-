@@ -18,6 +18,7 @@ import { ScreenHeader } from '../../ui/ScreenHeader';
 import s from '../../ui/Screen.module.css';
 import styles from './Stats.module.css';
 import { Kpi } from './TodayScreen';
+import { MoreStats } from './MoreStats';
 import { computeEconomics, EconomicAnalysis, type Economics } from './EconomicAnalysis';
 import { fmtPct, signedPct, useSalesSince } from './useReport';
 
@@ -95,11 +96,11 @@ export default function ProfitScreen() {
       : null;
     const econ = computeEconomics(sum, rows, prevRows, periodDays);
     const verdict = businessVerdict(sum, exp.length > 0 || settings.fixedMonthlyCosts > 0);
-    return { sum, vs, points, rows, verdict, monthly: keys.length > 45, econ };
+    return { sum, vs, points, rows, verdict, monthly: keys.length > 45, econ, sales, startKey };
   }, [data, days, now, settings.fixedMonthlyCosts, products]);
 
   if (!view) return null;
-  const { sum, vs, points, rows, verdict, monthly, econ } = view;
+  const { sum, vs, points, rows, verdict, monthly, econ, sales, startKey } = view;
   const names = new Map(rows.map((r) => [r.productId, r.name]));
   const shown = filter === 'review' ? rows.filter((r) => REVIEW.has(r.verdict)) : rows;
   const reviewCount = rows.filter((r) => REVIEW.has(r.verdict)).length;
@@ -167,6 +168,7 @@ export default function ProfitScreen() {
         </div>
 
         <EconomicAnalysis econ={econ} rows={rows} names={names} />
+        <MoreStats sales={sales} fromKey={startKey} names={names} />
 
         <div className={styles.sectionHead}>
           <span className={s.label}>{t.stats.products}</span>

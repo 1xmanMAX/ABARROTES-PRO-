@@ -5,9 +5,12 @@ import type {
   CashMovement,
   Consignment,
   ConsignmentLine,
+  DayClose,
   LedgerEntry,
   Party,
   Product,
+  Purchase,
+  PurchaseLine,
   Settings,
   Settlement,
   SettlementLine,
@@ -34,6 +37,9 @@ export class BodegaDB extends Dexie {
   consignmentLines!: EntityTable<ConsignmentLine, 'id'>;
   settlements!: EntityTable<Settlement, 'id'>;
   settlementLines!: EntityTable<SettlementLine, 'id'>;
+  purchases!: EntityTable<Purchase, 'id'>;
+  purchaseLines!: EntityTable<PurchaseLine, 'id'>;
+  dayCloses!: EntityTable<DayClose, 'id'>;
 
   constructor(name = 'mi-bodega') {
     super(name);
@@ -68,6 +74,13 @@ export class BodegaDB extends Dexie {
       consignmentLines: 'id, consignmentId, productId',
       settlements: 'id, partyId, createdAt',
       settlementLines: 'id, settlementId, consignmentLineId, productId',
+    });
+    // Fase 5: compras y cierres de caja.
+    this.version(5).stores({
+      purchases: 'id, dayKey, createdAt',
+      purchaseLines: 'id, purchaseId, productId',
+      dayCloses: 'id, &dayKey, createdAt',
+      cashMovements: 'id, type, dayKey, method, createdAt, [refType+refId]',
     });
   }
 }

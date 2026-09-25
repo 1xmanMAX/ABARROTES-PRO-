@@ -19,6 +19,8 @@ interface Props {
   /** Nombre de la serie (título accesible). */
   name: string;
   height?: number;
+  /** Mostrar +/− en los montos (ganancia). Desactivar para ventas. */
+  signed?: boolean;
 }
 
 /**
@@ -26,7 +28,7 @@ interface Props {
  * negativo abajo (la posición y el signo dicen si se ganó o se perdió; el color
  * solo acompaña). Tocar una barra muestra su valor.
  */
-export function BarChart({ points, name, height = 150 }: Props) {
+export function BarChart({ points, name, height = 150, signed = true }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
   const [showTable, setShowTable] = useState(false);
   const max = Math.max(0, ...points.map((p) => p.value));
@@ -47,7 +49,7 @@ export function BarChart({ points, name, height = 150 }: Props) {
       <div className={styles.readout} aria-live="polite">
         {sel ? (
           <>
-            <strong>{sel.title}</strong> · <span className="mono">{formatPEN(sel.value, { sign: true })}</span>
+            <strong>{sel.title}</strong> · <span className="mono">{formatPEN(sel.value, { sign: signed })}</span>
             {sel.detail && <span className={styles.detail}> · {sel.detail}</span>}
           </>
         ) : (
@@ -71,7 +73,7 @@ export function BarChart({ points, name, height = 150 }: Props) {
               key={p.key}
               role="button"
               tabIndex={0}
-              aria-label={`${p.title}: ${formatPEN(p.value, { sign: true })}`}
+              aria-label={`${p.title}: ${formatPEN(p.value, { sign: signed })}`}
               className={styles.col}
               onClick={() => setSelected(p.key === selected ? null : p.key)}
               onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setSelected(p.key)}
@@ -99,7 +101,7 @@ export function BarChart({ points, name, height = 150 }: Props) {
             {points.map((p) => (
               <tr key={p.key}>
                 <td>{p.title}</td>
-                <td className="mono">{formatPEN(p.value, { sign: true })}</td>
+                <td className="mono">{formatPEN(p.value, { sign: signed })}</td>
               </tr>
             ))}
           </tbody>

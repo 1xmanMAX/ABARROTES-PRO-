@@ -145,7 +145,11 @@ export async function getPartyHistory(partyId: string): Promise<HistoryItem[]> {
   const [entries, audit, receipts] = await Promise.all([
     db.ledgerEntries.where('partyId').equals(partyId).toArray(),
     db.auditLog.where('entityId').equals(partyId).toArray(),
-    db.signatures.where('partyId').equals(partyId).filter((sg) => sg.purpose === 'consignment_receipt').toArray(),
+    db.signatures
+      .where('partyId')
+      .equals(partyId)
+      .filter((sg) => sg.purpose === 'consignment_receipt')
+      .toArray(),
   ]);
   const items: HistoryItem[] = [
     ...entries.map((e) => ({

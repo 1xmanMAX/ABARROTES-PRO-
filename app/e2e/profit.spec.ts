@@ -11,7 +11,7 @@ test('ganancias de hoy con gastos y rentabilidad por producto', async ({ page })
   await expect(page.getByRole('status')).toContainText('registrada');
 
   await page.getByRole('button', { name: 'Menú' }).click();
-  await page.getByRole('button', { name: 'Ganancias de hoy' }).click();
+  await page.getByRole('button', { name: 'Inicio', exact: true }).click();
   await expect(page.getByTestId('sold-today')).toHaveText('S/ 370.00');
   await expect(page.getByTestId('net-today')).toHaveText('+S/ 40.00');
 

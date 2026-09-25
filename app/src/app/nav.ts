@@ -12,6 +12,8 @@ export type Route =
   | { name: 'partyEdit'; id: string | null }
   | { name: 'voucher'; signatureId: string }
   | { name: 'today' }
+  | { name: 'cash' }
+  | { name: 'purchase' }
   | { name: 'deliver'; partyId: string }
   | { name: 'settle'; partyId: string }
   | { name: 'profit' };

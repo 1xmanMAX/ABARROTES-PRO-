@@ -3,7 +3,13 @@ import { useProductMap, useProducts, useSettings } from '../../app/data';
 import { useNav } from '../../app/nav';
 import { formatPEN } from '../../domain/money';
 import { changePct, productReport, summarize } from '../../domain/profit';
-import { formatTime, lastDayKeys } from '../../domain/time';
+import { formatTime, lastDayKeys, dayKeyOf, formatDayKey } from '../../domain/time';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { cashBalance } from '../../domain/cash';
+import { isOverdue, pendingValue } from '../../domain/consignment';
+import { formatQty } from '../../domain/qty';
+import { getOpenConsignments } from '../../db/consignments';
+import { db } from '../../db/schema';
 import { voidExpense } from '../../db/cash';
 import { toExpenses } from '../../db/reports';
 import type { CashMovement } from '../../db/types';
@@ -26,6 +32,17 @@ export default function TodayScreen() {
   const [yesterday, today] = lastDayKeys(2, Date.now()) as [string, string];
   const data = useSalesSince(yesterday);
   const [adding, setAdding] = useState(false);
+  // Resumen del negocio (SPEC §12): caja, por cobrar, consignación, stock bajo y entregas vencidas.
+  const extra = useLiveQuery(async () => {
+    const [moves, parties, open] = await Promise.all([db.cashMovements.toArray(), db.parties.toArray(), getOpenConsignments()]);
+    return {
+      cash: cashBalance(moves, 'cash'),
+      receivable: parties.reduce((a, p) => a + Math.max(0, p.balance), 0),
+      consigned: open.reduce((a, o) => a + pendingValue(o.lines), 0),
+      overdue: open.filter((o) => isOverdue(o.consignment.dueDate, Date.now())),
+    };
+  }, []);
+  const lowStock = products.filter((p) => p.active && p.stock <= p.minStock);
   const [voiding, setVoiding] = useState<CashMovement | null>(null);
 
   const view = useMemo(() => {
@@ -83,9 +100,52 @@ export default function TodayScreen() {
           />
         </div>
 
+        {extra && (
+          <div className={styles.kpis}>
+            <button type="button" className={styles.kpiBtn} onClick={() => push({ name: 'cash' })}>
+              <Kpi label={t.stats.cashNow} value={formatPEN(extra.cash)} testId="home-cash" />
+            </button>
+            <button type="button" className={styles.kpiBtn} onClick={() => push({ name: 'parties' })}>
+              <Kpi label={t.stats.receivable} value={formatPEN(extra.receivable)} sub={t.stats.receivableSub} />
+            </button>
+            <Kpi label={t.stats.consigned} value={formatPEN(extra.consigned)} />
+            <Kpi label={t.stats.lowStock} value={String(lowStock.length)} />
+          </div>
+        )}
+
         <Button variant="primary" block onClick={() => push({ name: 'profit' })}>
           {t.stats.seeProfit}
         </Button>
+
+        {extra && extra.overdue.length > 0 && (
+          <>
+            <div className={s.label}>{t.stats.overdue}</div>
+            {extra.overdue.map((o) => (
+              <button
+                key={o.consignment.id}
+                type="button"
+                className={styles.topRow}
+                onClick={() => push({ name: 'party', id: o.consignment.partyId })}
+              >
+                <span>
+                  {o.consignment.partyName} · {t.consign.due(formatDayKey(dayKeyOf(o.consignment.dueDate)))}
+                </span>
+                <span className={`mono ${styles.negative}`}>{formatPEN(pendingValue(o.lines))}</span>
+              </button>
+            ))}
+          </>
+        )}
+        {lowStock.length > 0 && (
+          <>
+            <div className={s.label}>{t.stats.lowStock}</div>
+            {lowStock.map((p) => (
+              <button key={p.id} type="button" className={styles.topRow} onClick={() => push({ name: 'product', id: p.id })}>
+                <span>{p.name}</span>
+                <span className={`mono ${styles.negative}`}>{formatQty(p, p.stock)}</span>
+              </button>
+            ))}
+          </>
+        )}
 
         <div className={styles.sectionHead}>
           <span className={s.label}>{t.stats.todayExpenses}</span>

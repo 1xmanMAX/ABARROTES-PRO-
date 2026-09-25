@@ -20,6 +20,8 @@ const loaders = {
   voucher: () => import('../features/parties/VoucherScreen'),
   today: () => import('../features/stats/TodayScreen'),
   deliver: () => import('../features/consign/DeliverScreen'),
+  cash: () => import('../features/cash/CashScreen'),
+  purchase: () => import('../features/cash/PurchaseScreen'),
   settle: () => import('../features/consign/SettleScreen'),
   profit: () => import('../features/stats/ProfitScreen'),
 };
@@ -33,6 +35,8 @@ const PartyEditScreen = lazy(loaders.partyEdit);
 const VoucherScreen = lazy(loaders.voucher);
 const TodayScreen = lazy(loaders.today);
 const DeliverScreen = lazy(loaders.deliver);
+const CashScreen = lazy(loaders.cash);
+const PurchaseScreen = lazy(loaders.purchase);
 const SettleScreen = lazy(loaders.settle);
 const ProfitScreen = lazy(loaders.profit);
 
@@ -86,6 +90,8 @@ export function App() {
         {route.name === 'voucher' && <VoucherScreen signatureId={route.signatureId} />}
         {route.name === 'today' && <TodayScreen />}
         {route.name === 'deliver' && <DeliverScreen partyId={route.partyId} />}
+        {route.name === 'cash' && <CashScreen />}
+        {route.name === 'purchase' && <PurchaseScreen />}
         {route.name === 'settle' && <SettleScreen partyId={route.partyId} />}
         {route.name === 'profit' && <ProfitScreen />}
       </Suspense>

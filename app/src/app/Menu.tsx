@@ -4,6 +4,7 @@ import styles from './Menu.module.css';
 
 const ITEMS: { label: string; route: Route }[] = [
   { label: t.menu.today, route: { name: 'today' } },
+  { label: t.menu.cash, route: { name: 'cash' } },
   { label: t.menu.profit, route: { name: 'profit' } },
   { label: t.menu.inventory, route: { name: 'inventory' } },
   { label: t.menu.parties, route: { name: 'parties' } },

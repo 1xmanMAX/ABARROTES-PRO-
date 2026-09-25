@@ -298,3 +298,24 @@
   background: var(--paper-line);
   color: var(--ink);
 }
+
+.kpiBtn {
+  border: none;
+  background: none;
+  padding: 0;
+  text-align: left;
+  display: block;
+  width: 100%;
+}
+.kpiBtn .kpi {
+  height: 100%;
+}
+.topRow {
+  width: 100%;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  text-align: left;
+  min-height: var(--tap-min);
+}

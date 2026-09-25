@@ -49,7 +49,7 @@ Chart.js entra en la Fase 5 (Estadísticas), con carga diferida.
 | Ganancias de hoy y rentabilidad (parte de la Fase 5) | **Hecha, esperando tu OK** |
 | Análisis económico: equilibrio, Pareto ABC, BCG, GMROI | **Hecha, esperando tu OK** |
 | 4. Consignación: entregar y liquidar | **Hecha, esperando tu OK** |
-| 5. Caja, compras, gastos, estadísticas, inicio | pendiente |
+| 5. Caja, compras, gastos, estadísticas, inicio | **Hecha, esperando tu OK** |
 | 6. Respaldo, ESC/POS Bluetooth, nube (opcional) | pendiente |
 
 ## Ambigüedades y cómo las resolví (Fase 1)
@@ -170,6 +170,17 @@ Cada indicador tiene su gráfico y un botón "¿Qué es?" con la explicación si
    - El sello dice PAGADO si pagó algo y FIADO si no pagó nada.
    - La entrega tiene sello RECIBIDO y no muestra saldos, porque no genera deuda.
 7. **Historial de la persona:** incluye las entregas ("Recibió mercadería") con su comprobante.
+
+## Ambigüedades y cómo las resolví (Fase 5)
+
+1. **Saldo de caja:** es la suma de todos los movimientos en efectivo no anulados, desde siempre: saldo inicial + ventas + cobros + pagos de vendedores + aportes − compras − gastos − retiros ± ajustes de cierre. Yape/Plin se muestra aparte.
+2. **Saldo inicial:** el botón aparece solo mientras no se haya registrado uno. Después, para poner plata se usa "Aporte".
+3. **Retiros:** no dejan sacar más efectivo del que hay en caja. No cuentan como gasto, así que no bajan la ganancia.
+4. **Cierre del día:** uno por día. Guarda lo esperado, lo contado y la diferencia. Si sobra o falta, registra un "Ajuste de cierre" para que la caja quede igual a lo contado.
+5. **Compras:** suman al stock, restan de la caja (efectivo o Yape) y, por defecto, actualizan el costo del producto. La ganancia de ventas pasadas no cambia, porque cada venta guardó su costo.
+6. **Anular movimientos:** gastos, retiros, aportes y saldo inicial se anulan en Caja con motivo. Las ventas, cobros y compras no se anulan desde ahí.
+7. **Inicio:** agrega efectivo en caja, por cobrar (fiado y deudas de vendedores), mercadería con vendedores, stock bajo y entregas vencidas, además de lo que ya mostraba.
+8. **Más estadísticas** (en Rentabilidad): ventas por hora del día, productos que se compran juntos (lo que usa "Siguiente probable"), deudores principales y rendimiento por vendedor (vendido y devuelto).
 
 ## Propuestas (no implementadas; necesito tu decisión)
 

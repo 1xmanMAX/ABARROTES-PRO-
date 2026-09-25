@@ -273,3 +273,36 @@ export interface SettlementLine {
   agreedPrice: Cents;
   lineTotal: Cents;
 }
+
+export interface Purchase {
+  id: string;
+  supplier: string;
+  total: Cents;
+  method: 'cash' | 'digital';
+  /** ¿Se actualizó el costo de los productos con esta compra? */
+  updatedCost: boolean;
+  dayKey: string;
+  createdAt: number;
+}
+
+export interface PurchaseLine {
+  id: string;
+  purchaseId: string;
+  productId: string;
+  productName: string;
+  fractional: boolean;
+  qty: Qty;
+  unitCost: Cents;
+  lineTotal: Cents;
+}
+
+export interface DayClose {
+  id: string;
+  dayKey: string;
+  expectedCash: Cents;
+  countedCash: Cents;
+  /** Contado − esperado (+ sobra, − falta). */
+  difference: Cents;
+  note: string;
+  createdAt: number;
+}
