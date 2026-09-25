@@ -1,0 +1,58 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(15, 20, 13, 0.5);
+}
+.drawer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: min(300px, 82vw);
+  background: var(--paper);
+  border-right: 3px solid var(--gold);
+  display: flex;
+  flex-direction: column;
+  padding: calc(14px + env(safe-area-inset-top)) 12px 14px;
+  gap: 6px;
+  animation: slide 150ms ease-out;
+}
+.brand {
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--cover);
+  padding: 6px 10px 14px;
+}
+:global([data-theme='dark']) .brand {
+  color: var(--gold);
+}
+.item {
+  min-height: 52px;
+  text-align: left;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-weight: 700;
+  font-size: 16px;
+  padding: 0 12px;
+}
+.item:active {
+  background: var(--paper-line);
+}
+.current {
+  background: var(--surface);
+  border: 1px solid var(--paper-line);
+}
+.soon {
+  margin-top: auto;
+  color: var(--ink-soft);
+  font-size: 12px;
+  padding: 0 10px;
+}
+@keyframes slide {
+  from {
+    transform: translateX(-30px);
+    opacity: 0.4;
+  }
+}

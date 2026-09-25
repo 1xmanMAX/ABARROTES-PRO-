@@ -1,0 +1,86 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 60px;
+  padding: 10px 14px;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  text-align: left;
+}
+.rowMain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.name {
+  font-weight: 700;
+  font-size: 15px;
+}
+.stock {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.badge {
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--paper-line);
+  color: var(--ink-soft);
+  vertical-align: middle;
+}
+.badgeLow {
+  background: color-mix(in srgb, var(--brick) 18%, transparent);
+  color: var(--brick);
+}
+.photoRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.photo {
+  width: 88px;
+  height: 88px;
+  border-radius: var(--radius-lg);
+  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 34px;
+  color: rgba(255, 255, 255, 0.6);
+  flex-shrink: 0;
+}
+.photoBtns {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+.margin {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 14px;
+}
+.marginPos {
+  color: var(--leaf);
+}
+.marginNeg {
+  color: var(--brick);
+}
+.stockCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.stockValue {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 20px;
+}
