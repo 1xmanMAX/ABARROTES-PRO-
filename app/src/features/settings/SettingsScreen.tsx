@@ -8,6 +8,7 @@ import { setOwnerPin } from '../../db/pins';
 import { PinCreate } from '../../ui/PinCreate';
 import { Sheet } from '../../ui/Sheet';
 import { useOwnerPin } from '../parties/usePin';
+import { isNativeApp } from '../../print/nativePrint';
 import type { ThemePref } from '../../db/types';
 import { t } from '../../i18n/es-PE';
 import { Button } from '../../ui/Button';
@@ -28,6 +29,8 @@ export default function SettingsScreen() {
   const [askOwner, ownerSheet] = useOwnerPin();
 
   useEffect(() => {
+    // En el APK los datos viven en el almacenamiento propio de la app: no se borran solos.
+    if (isNativeApp()) return setPersisted(true);
     navigator.storage?.persisted?.().then(setPersisted, () => setPersisted(false));
   }, []);
 

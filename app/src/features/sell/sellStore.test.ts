@@ -79,3 +79,13 @@ describe('sellStore', () => {
     expect(open[0]!.lines[0]!.qty).toBe(2);
   });
 });
+
+describe('cuadrícula en distintas pantallas', () => {
+  it('teléfono: 3 columnas; PC: más columnas y siempre cabe "Buscar"', async () => {
+    const { gridLayout } = await import('./ProductGrid');
+    expect(gridLayout(362, 540)).toEqual({ cols: 3, capacity: 11 });
+    const pc = gridLayout(972, 470);
+    expect(pc.cols).toBe(6);
+    expect(pc.capacity).toBeGreaterThanOrEqual(11);
+  });
+});

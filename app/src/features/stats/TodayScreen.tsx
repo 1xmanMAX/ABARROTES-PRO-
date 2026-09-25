@@ -69,7 +69,9 @@ export default function TodayScreen() {
       <div className={s.content}>
         {backupDue(settings.lastBackupAt, products.length > 0, Date.now()) && (
           <Button variant="danger" block onClick={() => push({ name: 'backup' })}>
-            {t.menu.backupDue(settings.lastBackupAt ? t.backup.ago(daysSince(settings.lastBackupAt, Date.now())) : t.backup.neverShort)}
+            {t.menu.backupDue(
+              settings.lastBackupAt ? t.backup.ago(daysSince(settings.lastBackupAt, Date.now())) : t.backup.neverShort,
+            )}
           </Button>
         )}
 

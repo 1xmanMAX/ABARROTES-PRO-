@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { PIN_LENGTH } from '../domain/pin';
 import { t } from '../i18n/es-PE';
 import styles from './PinPad.module.css';
+import { useKeypadKeys } from './keypadKeys';
 import { vibrate } from './toast';
 
 interface Props {
@@ -42,6 +43,23 @@ export function PinPad({ title, hint, submitLabel = t.pin.sign, initialError = n
       setBusy(false);
     }
   };
+
+  // En PC: dígitos, Retroceso y Enter (= Firmar).
+  useKeypadKeys((k) => {
+    if (/^\d$/.test(k)) {
+      press(k);
+      return true;
+    }
+    if (k === 'Backspace') {
+      press('del');
+      return true;
+    }
+    if (k === 'Enter') {
+      void submit();
+      return true;
+    }
+    return false;
+  });
 
   return (
     <div className={styles.wrap}>

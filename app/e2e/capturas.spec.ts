@@ -124,3 +124,15 @@ test('capturas del README', async ({ page }) => {
   await page.waitForTimeout(300);
   await shot(page, '19-oscuro');
 });
+
+test('captura de la versión de PC', async ({ browser }) => {
+  test.setTimeout(120_000);
+  const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 } });
+  const page = await ctx.newPage();
+  await freshWithDemo(page);
+  await quiet(page);
+  await tile(page, 'Arroz saco 50kg').click();
+  await tile(page, 'Aceite caja ×12').click();
+  await shot(page, '20-pc');
+  await ctx.close();
+});

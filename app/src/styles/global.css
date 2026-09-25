@@ -63,6 +63,19 @@ button:disabled {
   white-space: nowrap;
 }
 
+/* PC y tablet: la app se centra con un ancho máximo cómodo. */
+@media (min-width: 1040px) {
+  body {
+    background: var(--paper-line);
+  }
+  #root {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: var(--paper);
+    box-shadow: 0 0 40px var(--shadow);
+  }
+}
+
 #print-root {
   display: none;
 }

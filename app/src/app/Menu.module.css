@@ -8,7 +8,8 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 0;
+  /* En PC, pegado al borde de la app centrada. */
+  left: max(0px, calc((100vw - 1000px) / 2));
   width: min(300px, 82vw);
   background: var(--paper);
   border-right: 3px solid var(--gold);

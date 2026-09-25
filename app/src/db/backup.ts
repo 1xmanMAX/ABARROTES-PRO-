@@ -62,7 +62,8 @@ export async function createBackup(
   for (const [name, rows] of Object.entries(raw)) tables[name] = (await serialize(rows)) as unknown[];
   const summary: Record<string, number> = Object.fromEntries(SUMMARY_TABLES.map((n) => [n, tables[n]?.length ?? 0]));
   // Ventas = tickets cerrados (los abiertos son pestañas en espera).
-  summary.sales = (raw.tickets as { status: string }[] | undefined)?.filter((x) => x.status === 'paid' || x.status === 'credit').length ?? 0;
+  summary.sales =
+    (raw.tickets as { status: string }[] | undefined)?.filter((x) => x.status === 'paid' || x.status === 'credit').length ?? 0;
   const envelope = await encryptBackup(
     { tables } satisfies BackupData,
     ownerPin,

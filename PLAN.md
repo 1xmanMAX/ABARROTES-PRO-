@@ -196,6 +196,23 @@ Cada indicador tiene su gráfico y un botón "¿Qué es?" con la explicación si
    - Si el archivo es de una versión más nueva de la app, lo rechaza.
 3. **Recordatorio semanal:** si hay datos y pasaron más de 7 días (o nunca se hizo), aparece un aviso en el Menú y en Inicio.
 
+## Misma funcionalidad en PC y Android
+
+1. **Pantallas anchas (PC, tablet):**
+   - La cuadrícula de Vender usa tantas columnas como entren (tiles de hasta 150 px), así se ven todos los productos y "Buscar". En el teléfono siguen siendo 3 columnas.
+   - Las demás pantallas se centran en un ancho cómodo.
+   - Toda la app se centra en máximo 1000 px.
+2. **Teclado físico:** los teclados de la app (montos, cantidades, códigos) también responden a las teclas 0–9, punto o coma, Retroceso y Enter (= Firmar en los códigos). Solo responde el teclado que está al frente, y nunca mientras se escribe en un campo de texto.
+3. **Imprimir dentro del APK:**
+   - Un plugin nativo (`PrinterPlugin.java`) recibe el HTML del recibo con sus estilos y lo manda al sistema de impresión de Android, el mismo que usa Chrome.
+   - En el navegador se sigue usando el diálogo del navegador.
+   - **No probado en un teléfono real:** solo se verificó que compila.
+4. **Versión web publicada:** GitHub Pages en `https://1xmanmax.github.io/ABARROTES-PRO-/`. Hay que activarlo una vez (Settings → Pages → Source: GitHub Actions) y se publica desde `main`.
+5. **Diferencias que quedan, por la naturaleza de cada plataforma:**
+   - la PC no vibra;
+   - la copia de seguridad se comparte en Android y se descarga en la PC;
+   - cada instalación tiene sus propios datos (se pasan con la copia de seguridad).
+
 ## Propuestas (no implementadas; necesito tu decisión)
 
 - **Clave de la copia más larga:** la spec pide cifrar con el código de dueño, que tiene 4 dígitos (10 000 combinaciones). Dentro de la app hay bloqueo por intentos, pero quien robe el archivo puede probar las combinaciones en su computadora. Las 600 000 iteraciones lo vuelven lento (del orden de horas), no imposible. Propongo una **clave de copia aparte, de 6 o más caracteres**, que se pida solo al crear y restaurar copias. El riesgo es que, si el dueño la olvida, no puede restaurar.

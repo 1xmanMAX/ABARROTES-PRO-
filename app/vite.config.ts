@@ -6,6 +6,8 @@ import { VitePWA } from 'vite-plugin-pwa';
 import pkg from './package.json' with { type: 'json' };
 
 export default defineConfig({
+  // GitHub Pages sirve la app en /<repo>/; el APK y el servidor local, en /.
+  base: process.env.VITE_BASE ?? '/',
   define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   plugins: [
     react(),

@@ -8,6 +8,8 @@ import type { Signature } from '../db/types';
 import { formatDateTime } from '../domain/time';
 import { t } from '../i18n/es-PE';
 import { usePrint } from './printStore';
+import { isNativeApp, printNative } from './nativePrint';
+import { toastError } from '../ui/toast';
 import styles from './Receipt.module.css';
 
 /** Recibo de 58/80 mm renderizado solo para impresión (@media print). */
@@ -18,9 +20,19 @@ export function ReceiptPrinter() {
   useEffect(() => {
     if (!job) return;
     // Dejar que React pinte el recibo antes de abrir el diálogo.
-    const id = requestAnimationFrame(() => setTimeout(() => window.print(), 30));
+    const id = requestAnimationFrame(() =>
+      setTimeout(() => {
+        const root = document.getElementById('print-root');
+        if (isNativeApp() && root) {
+          // APK: el WebView no implementa window.print(); se usa el plugin nativo.
+          printNative(root, settings.paperWidth, settings.shopName).catch(toastError);
+        } else {
+          window.print();
+        }
+      }, 30),
+    );
     return () => cancelAnimationFrame(id);
-  }, [job]);
+  }, [job, settings.paperWidth, settings.shopName]);
 
   const root = document.getElementById('print-root');
   if (!job || !root) return null;

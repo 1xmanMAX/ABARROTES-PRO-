@@ -34,11 +34,31 @@
 
 - Cada vez que se mejora la app, el APK nuevo queda en el **mismo link**.
 - **Las versiones nuevas se instalan encima sin borrar tus datos.** No desinstales la app: desinstalar sí borra todo.
-- Dentro del APK todavía no se puede imprimir; para imprimir usa la opción B.
 
-### Opción B: desde Chrome (sin instalar el APK)
+### Opción B: en la PC (o cualquier navegador)
 
-Si alguien corre la app en una computadora (ver [sección 7](#7-para-programadores)), ábrela en Chrome desde el teléfono. Luego ve al menú ⋮ → **Agregar a pantalla principal**. Así también funciona sin internet y **sí puede imprimir** recibos.
+Abre **https://1xmanmax.github.io/ABARROTES-PRO-/** en Chrome o Edge. Para tenerla como programa, toca el ícono **Instalar** (⊕) en la barra de direcciones. En el teléfono también se puede: menú ⋮ → **Agregar a pantalla principal**.
+
+- Funciona sin internet después de abrirla una vez.
+- En la PC se puede **escribir con el teclado**: montos, cantidades y códigos (Enter = Firmar).
+- La cuadrícula aprovecha la pantalla ancha y muestra más productos a la vez.
+
+> **Aviso:** cada instalación (APK, PC, Chrome del teléfono) tiene **sus propios datos**. No se sincronizan entre sí. Para pasar los datos de uno a otro, usa la **copia de seguridad**: créala en uno y restáurala en el otro.
+
+<p align="center"><img src="docs/capturas/20-pc.png" width="640" alt="Versión de PC"></p>
+
+### Las dos versiones tienen las mismas funciones
+
+| Función | Android (APK) | PC / navegador |
+|---|---|---|
+| Vender, cobrar, fiado, entregas, caja, rentabilidad | ✅ | ✅ |
+| Funciona sin internet | ✅ | ✅ (después de abrirla una vez) |
+| Imprimir recibos y comprobantes | ✅ (sistema de impresión de Android) | ✅ (diálogo de impresión del navegador) |
+| Copia de seguridad | ✅ Se comparte por WhatsApp, Drive… | ✅ Se descarga el archivo |
+| Foto de producto | ✅ Cámara o galería | ✅ Elegir archivo (o cámara web) |
+| Enviar comprobante por WhatsApp | ✅ Abre WhatsApp | ✅ Abre WhatsApp Web |
+| Escribir con el teclado físico | — | ✅ |
+| Vibración al tocar | ✅ | — (las PC no vibran) |
 
 ---
 
@@ -264,8 +284,11 @@ En su ficha → **Cambiar código**. Tú escribes tu código de dueño y la pers
 **¿Por qué la ganancia de hoy sale negativa?**
 Porque ya se descontó la parte del día de tus gastos fijos (alquiler, luz…). Es normal en días de pocas ventas; mira la Rentabilidad de 30 días.
 
-**¿Puedo usarla en dos teléfonos?**
-Todavía no: es para un solo teléfono. La sincronización en la nube es una fase opcional pendiente.
+**¿Puedo usarla en dos teléfonos, o en el teléfono y la PC a la vez?**
+Sí puedes instalarla en varios, pero **cada uno guarda sus propios datos** y no se sincronizan. Para pasar los datos, haz una copia en uno y restáurala en el otro. La sincronización automática en la nube es una fase opcional pendiente.
+
+**¿Cómo imprimo?**
+Al cobrar, toca **Cobrar e imprimir**; también se puede reimprimir desde el Historial o el comprobante. Se abre el diálogo de impresión: en Android elige tu impresora (hace falta el servicio de impresión de la marca); en la PC, la impresora instalada.
 
 **Actualicé la app, ¿perdí algo?**
 No. Instalar el APK nuevo encima conserva todo. Solo desinstalar borra los datos.
@@ -284,7 +307,7 @@ No. Instalar el APK nuevo encima conserva todo. Solo desinstalar borra los datos
 | Estado de pantalla | Zustand (carrito, tickets en espera); lecturas con `useLiveQuery` |
 | Criptografía | WebCrypto: PBKDF2-SHA256 (códigos), SHA-256 (firmas), AES-GCM (copias) |
 | APK | Capacitor 8 (Android), compilado por GitHub Actions |
-| Tests | Vitest + fake-indexeddb (101 tests), Playwright en 390×844 (14 flujos) |
+| Tests | Vitest + fake-indexeddb (103 tests), Playwright en teléfono 390×844 y PC 1366×768 (15 flujos) |
 
 ### Estructura
 
@@ -321,6 +344,12 @@ npm run capturas       # regenera las imágenes del README
 ### APK automático
 
 Cada push a `main` o a `claude/**` que toque `app/` dispara [`.github/workflows/android-apk.yml`](.github/workflows/android-apk.yml). El workflow corre los tests, compila el APK y lo publica en la release [`apk-latest`](https://github.com/1xmanMAX/ABARROTES-PRO-/releases/tag/apk-latest). El APK se firma siempre con la misma clave de desarrollo (`app/android/app/mibodega-debug.keystore`), así las actualizaciones se instalan encima. Para publicar en Play Store haría falta una clave privada aparte.
+
+La impresión dentro del APK usa un plugin propio (`app/android/app/src/main/java/pe/mibodega/app/PrinterPlugin.java`), porque el WebView de Android no implementa `window.print()`.
+
+### Versión web automática (PC)
+
+Cada push a `main` dispara [`.github/workflows/pages.yml`](.github/workflows/pages.yml): tests, build con la ruta `/ABARROTES-PRO-/` y publicación en GitHub Pages. **Una sola vez** hay que activarlo en el repositorio: *Settings → Pages → Build and deployment → Source: GitHub Actions*.
 
 ### Reglas del código
 
