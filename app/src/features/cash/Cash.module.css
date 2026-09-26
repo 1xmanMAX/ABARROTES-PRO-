@@ -1,0 +1,101 @@
+.hero {
+  text-align: center;
+  padding: 6px 0;
+}
+.heroValue {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 44px;
+  font-variant-numeric: tabular-nums;
+}
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chip {
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1.5px solid var(--paper-line);
+  border-radius: 999px;
+  background: var(--surface);
+  font-weight: 700;
+  font-size: 12px;
+}
+.chip[aria-pressed='true'] {
+  border-color: var(--cover);
+  background: var(--cover);
+  color: var(--cover-ink);
+}
+.moves {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.move {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--paper-line);
+  font-size: 14px;
+}
+.moveMain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.moveType {
+  font-weight: 700;
+}
+.badge {
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--paper-line);
+}
+.in {
+  color: var(--leaf);
+}
+.out {
+  color: var(--brick);
+}
+.voided {
+  text-decoration: line-through;
+  opacity: 0.55;
+}
+.linkBtn {
+  border: none;
+  background: none;
+  color: var(--brick);
+  text-decoration: underline;
+  font-weight: 700;
+  min-height: var(--tap-min);
+  padding: 0 4px;
+}
+.display {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 32px;
+  text-align: center;
+}
+.closeRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+  font-weight: 600;
+}
+.diff {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 20px;
+}

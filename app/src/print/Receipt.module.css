@@ -1,0 +1,35 @@
+.receipt {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.35;
+  color: #000;
+  background: #fff;
+  padding: 3mm 2mm 6mm;
+}
+.center {
+  text-align: center;
+}
+.shop {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 15px;
+}
+.rule {
+  border-top: 1px dashed #000;
+  margin: 4px 0;
+}
+.line {
+  margin-bottom: 3px;
+}
+.split {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+.total {
+  font-weight: 700;
+  font-size: 14px;
+}
+.void {
+  font-weight: 700;
+}

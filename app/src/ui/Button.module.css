@@ -1,0 +1,41 @@
+.btn {
+  min-height: var(--tap-min);
+  border-radius: var(--radius-lg);
+  font-weight: 700;
+  font-size: 15px;
+  padding: 0 16px;
+  border: 1.5px solid var(--cover);
+  background: transparent;
+  color: var(--cover);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+:global([data-theme='dark']) .btn {
+  color: var(--gold);
+  border-color: var(--gold);
+}
+.primary {
+  min-height: 60px;
+  border: none;
+  background: var(--gold);
+  color: var(--cover-dark);
+  font-weight: 800;
+  font-size: 18px;
+}
+.danger {
+  border-color: var(--brick);
+  color: var(--brick);
+}
+.plain {
+  border-color: var(--paper-line);
+  background: var(--surface);
+  color: var(--ink);
+}
+.btn:disabled {
+  opacity: 0.45;
+}
+.block {
+  width: 100%;
+}

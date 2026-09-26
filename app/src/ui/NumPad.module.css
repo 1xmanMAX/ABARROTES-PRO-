@@ -1,0 +1,20 @@
+.pad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.key {
+  height: 56px;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 22px;
+}
+.key:active {
+  background: var(--paper-line);
+}
+.del {
+  color: var(--brick);
+}
