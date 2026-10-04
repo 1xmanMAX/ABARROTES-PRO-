@@ -13,6 +13,7 @@ const ITEMS: { label: string; route: Route }[] = [
   { label: t.menu.inventory, route: { name: 'inventory' } },
   { label: t.menu.parties, route: { name: 'parties' } },
   { label: t.menu.history, route: { name: 'history' } },
+  { label: t.menu.sync, route: { name: 'sync' } },
   { label: t.menu.backup, route: { name: 'backup' } },
   { label: t.menu.settings, route: { name: 'settings' } },
 ];

@@ -74,7 +74,7 @@ fn leer_escribir_y_respaldo_diario() {
         let cuerpo = s.clave.cifrar_json(&json!({ "dispositivo": "ap_1", "etiqueta": etiqueta, "datos": datos }));
         s.atender("POST", "/sync/v2/escribir", Some(&prueba(&s, "/sync/v2/escribir")), cuerpo.as_bytes(), false).estado
     };
-    let datos = json!({ "products": [{ "id": "p1", "name": "Arroz", "stock": 5 }], "sales": [], "movements": [], "settings": [] });
+    let datos = json!({ "products": [{ "id": "p1", "name": "Arroz", "stock": 5 }] });
     assert_eq!(escribir(&r["etiqueta"], datos.clone()), 200);
     // Con la etiqueta vieja: la PC cambió entre medio.
     assert_eq!(escribir(&r["etiqueta"], datos.clone()), 409);
@@ -91,4 +91,11 @@ fn leer_escribir_y_respaldo_diario() {
     assert_eq!(respaldos.len(), 1);
     let guardado: serde_json::Value = serde_json::from_slice(&std::fs::read(t.path().join("datos/products.json")).unwrap()).unwrap();
     assert_eq!(guardado[0]["stock"], 4);
+}
+
+/// El mismo vector se comprueba en app/src/sync/vector.test.ts: JS y Rust dan la misma huella.
+#[test]
+fn huella_igual_que_en_la_app() {
+    let datos: serde_json::Value = serde_json::from_str(include_str!("vector-huella.json")).unwrap();
+    assert_eq!(mi_bodega::parche::huella(&datos), "aa6c45a8a5a3d33c735147c92528badc");
 }

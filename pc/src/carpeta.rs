@@ -7,7 +7,26 @@ use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
-pub const COLECCIONES: [&str; 4] = ["products", "sales", "movements", "settings"];
+/// Las mismas tablas que `SYNC_TABLES` en app/src/sync/local.ts (y en el mismo orden).
+pub const COLECCIONES: [&str; 17] = [
+    "products",
+    "tickets",
+    "ticketLines",
+    "stockMovements",
+    "cashMovements",
+    "auditLog",
+    "parties",
+    "ledgerEntries",
+    "signatures",
+    "consignments",
+    "consignmentLines",
+    "settlements",
+    "settlementLines",
+    "purchases",
+    "purchaseLines",
+    "dayCloses",
+    "settings",
+];
 
 /// Cuántos días de respaldo se guardan.
 const DIAS_DE_RESPALDO: usize = 30;

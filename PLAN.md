@@ -51,7 +51,8 @@ Chart.js entra en la Fase 5 (Estadísticas), con carga diferida.
 | 4. Consignación: entregar y liquidar | **Hecha, esperando tu OK** |
 | 5. Caja, compras, gastos, estadísticas, inicio | **Hecha, esperando tu OK** |
 | 6a. Copia de seguridad cifrada + recordatorio semanal | **Hecha, esperando tu OK** |
-| 6b. ESC/POS Bluetooth, nube (opcional) | pendiente |
+| 6b. ESC/POS Bluetooth (opcional) | pendiente |
+| 6c. Sincronización por Wi-Fi PC ⇄ celulares | **Hecha, esperando tu OK** |
 
 ## Ambigüedades y cómo las resolví (Fase 1)
 
@@ -211,7 +212,23 @@ Cada indicador tiene su gráfico y un botón "¿Qué es?" con la explicación si
 5. **Diferencias que quedan, por la naturaleza de cada plataforma:**
    - la PC no vibra;
    - la copia de seguridad se comparte en Android y se descarga en la PC;
-   - cada instalación tiene sus propios datos (se pasan con la copia de seguridad).
+   - la PC instalada con `pcinstalar-windows.ps1` y los celulares se sincronizan por Wi-Fi; la versión de GitHub Pages tiene sus propios datos (se pasan con la copia de seguridad).
+
+## Sincronización por Wi-Fi (pedido del dueño)
+
+Copiada de Canvas de Citas, que ya funciona bien en la PC y el celular del dueño.
+
+1. **Quién guarda qué:** la PC es la casa de los datos. `pc/mi-bodega.exe` (arranca con Windows, unos 6 MB) guarda un JSON por tabla en `%LOCALAPPDATA%MiBodegadatos`, una base por aparato en `.sincro/` y un respaldo diario (30 días). La app de la PC es un aparato más: se sincroniza con su propio servidor por `127.0.0.1`.
+2. **Vincular:** la PC muestra un QR con `mibodega-sync://IP:47482/#clave`. El APK lo escanea con el escáner de Google Play Services (`VinculoPlugin.java`, sin permiso de cámara) o se pega el código. Si la PC cambia de IP, el celular la busca en su red /24.
+3. **Seguridad:** todo viaja cifrado con AES-256-GCM y la clave del QR, con la hora adentro (se rechaza lo que tenga más de 5 minutos de diferencia). El servidor solo entrega la app a la misma PC, y el firewall solo abre el puerto a la red local.
+4. **Cuándo:** al abrir la app, cada 5 minutos (cada minuto en la PC), al volver a la app y unos segundos después de cada cambio (10 s en el celular, 3 s en la PC). Al mostrar el QR, la PC se sincroniza en el acto.
+5. **Cómo se juntan los datos:** fusión a tres vías por registro y por campo contra la última base. Si ambos cambiaron lo mismo, gana el aparato que sincroniza; las fechas de modificación se quedan con la más reciente. **Nada se borra** al sincronizar: si un registro falta en un lado, se conserva el del otro, así que un celular reinstalado nunca borra datos de la PC.
+6. **Stock, saldos y entregas no se fusionan, se recalculan:** son cachés de los movimientos de stock, la cuenta corriente y las liquidaciones. Así, si se vendió en el celular y en la PC a la vez, el stock descuenta las dos ventas. Hay un test que comprueba que el recálculo da lo mismo que guarda la app tras todo tipo de operaciones.
+7. **Lo que no viaja:** las pestañas abiertas (cada aparato atiende a sus clientes), la caché de predicción (se reconstruye al recibir ventas), y de Ajustes el tema, el orden de la cuadrícula y la fecha de la última copia.
+8. **Primera vez:** sin base, en lo que difiera gana la PC. Un celular nuevo puede vincularse desde la primera pantalla y recibe el código de dueño de la PC, en vez de crear otro.
+9. **Si se cerró la caja el mismo día en dos aparatos,** vale el primer cierre.
+10. **Correlativo de tickets:** cada aparato numera sus tickets del día, así que puede haber dos #0001 el mismo día (uno de cada aparato). Si te molesta, se puede agregar una letra por aparato.
+11. **APK:** la app sigue en `https://localhost` (cambiar el esquema borraría los datos del teléfono) y llama a la PC por http con `allowMixedContent`; los datos van cifrados por la app.
 
 ## Visibilidad y velocidad de atención (pedido del dueño)
 

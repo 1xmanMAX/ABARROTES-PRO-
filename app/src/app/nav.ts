@@ -17,7 +17,8 @@ export type Route =
   | { name: 'purchase' }
   | { name: 'deliver'; partyId: string }
   | { name: 'settle'; partyId: string }
-  | { name: 'profit' };
+  | { name: 'profit' }
+  | { name: 'sync' };
 
 interface NavState {
   stack: Route[];

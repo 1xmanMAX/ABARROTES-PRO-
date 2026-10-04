@@ -1,5 +1,6 @@
-# Instala Mi Bodega en esta PC: compila la app (app/) y el servidor local (pc/), y crea los
-# accesos directos que la abren en una ventana de Comet.
+# Instala Mi Bodega en esta PC: compila la app (app/) y el servidor local (pc/), crea los accesos
+# directos que la abren en una ventana de Comet y deja el servidor listo para sincronizar con el
+# celular (arranque con Windows y regla del firewall).
 # Uso: powershell -ExecutionPolicy Bypass -File pc\instalar-windows.ps1
 # Volver a ejecutarlo actualiza la app sin borrar los datos (viven en el perfil de Comet).
 
@@ -31,8 +32,25 @@ $web = Join-Path $dir 'web'
 if (Test-Path $web) { Remove-Item $web -Recurse -Force }
 Copy-Item (Join-Path $raiz 'app\dist') $web -Recurse
 
-# El servidor arranca con el acceso directo; no hace falta que quede corriendo al iniciar Windows.
-Remove-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -Name 'MiBodega' -ErrorAction SilentlyContinue
+# Servidor al iniciar Windows (sin ventana, ~6 MB): el celular puede sincronizar aunque la app esté cerrada.
+Set-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -Name 'MiBodega' -Value "`"$exe`" --segundo-plano"
+
+# Permitir que el celular llegue al puerto 47482, solo desde la misma red local (pide permiso de
+# administrador una vez). Vale también si Windows marcó el Wi-Fi como red "Pública": todo va cifrado.
+$regla = 'Mi Bodega (sincronizar con el celular)'
+$actual = Get-NetFirewallRule -DisplayName $regla -ErrorAction SilentlyContinue | Get-NetFirewallApplicationFilter -ErrorAction SilentlyContinue
+if (-not $actual -or $actual.Program -ne $exe) {
+  $comando = "Remove-NetFirewallRule -DisplayName '$regla' -ErrorAction SilentlyContinue; " +
+    "New-NetFirewallRule -DisplayName '$regla' -Direction Inbound -Action Allow -Protocol TCP -LocalPort 47482 " +
+    "-RemoteAddress LocalSubnet -Profile Any -Program '$exe' | Out-Null"
+  try {
+    Start-Process powershell -Verb RunAs -Wait -WindowStyle Hidden -ArgumentList '-NoProfile', '-Command', $comando
+  } catch {
+    Write-Warning 'No se agregó la regla del firewall: el celular no podrá sincronizar hasta que se agregue (vuelve a ejecutar el instalador).'
+  }
+}
+
+Start-Process $exe -ArgumentList '--segundo-plano' -WindowStyle Hidden
 
 # Ícono para los accesos directos (los de Windows necesitan .ico).
 $png = [IO.File]::ReadAllBytes((Join-Path $web 'icon-192.png'))

@@ -1,0 +1,5 @@
+{
+  "products": [{ "id": "01J0A", "name": "Azúcar saco 50kg ×1 — ñ", "stock": 12, "salePrice": 16000, "photo": null, "nested": { "b": 1, "a": [1, 2, { "z": true, "y": "é" }] } }],
+  "settings": [{ "id": "main", "shopName": "Bodega \"Rosita\"", "ownerPin": { "hash": "abc", "iterations": 600000 } }],
+  "tickets": [{ "id": "01J0B", "total": 0, "voidReason": null, "Zeta": -5, "alpha": 1700000000123 }]
+}
