@@ -9,15 +9,19 @@ import s from '../../ui/Screen.module.css';
 import styles from './Sell.module.css';
 
 interface Props {
+  /** Lo que ya se escribió (en la PC, la letra que abrió la búsqueda). */
+  initialQuery?: string;
   products: Product[];
   available: (p: Product) => number;
   onPick: (p: Product) => void;
   onClose: () => void;
 }
 
-export function SearchSheet({ products, available, onPick, onClose }: Props) {
-  const [q, setQ] = useState('');
+export function SearchSheet({ initialQuery = '', products, available, onPick, onClose }: Props) {
+  const [q, setQ] = useState(initialQuery);
   const results = useMemo(() => searchProducts(products, q), [products, q]);
+  // Enter agrega el primer resultado con stock: escribir "arr" + Enter vende un arroz.
+  const first = results.find((p) => available(p) > 0);
   return (
     <Sheet title={t.sell.search} onClose={onClose}>
       <input
@@ -27,6 +31,12 @@ export function SearchSheet({ products, available, onPick, onClose }: Props) {
         placeholder={t.sell.searchPlaceholder}
         value={q}
         onChange={(e) => setQ(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && q.trim() && first) {
+            e.preventDefault();
+            onPick(first);
+          }
+        }}
         aria-label={t.sell.searchPlaceholder}
       />
       <div className={styles.searchList}>
@@ -34,7 +44,13 @@ export function SearchSheet({ products, available, onPick, onClose }: Props) {
         {results.map((p) => {
           const avail = available(p);
           return (
-            <button key={p.id} type="button" className={styles.searchRow} disabled={avail <= 0} onClick={() => onPick(p)}>
+            <button
+              key={p.id}
+              type="button"
+              className={`${styles.searchRow} ${q.trim() && p === first ? styles.searchFirst : ''}`}
+              disabled={avail <= 0}
+              onClick={() => onPick(p)}
+            >
               <span className={styles.searchName}>{p.name}</span>
               <span className={styles.searchMeta}>
                 <span className="mono">{formatPEN(p.salePrice)}</span>

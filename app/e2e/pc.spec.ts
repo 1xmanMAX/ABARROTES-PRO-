@@ -31,3 +31,26 @@ test('PC: se ven todos los productos y "Buscar", y se escribe con el teclado', a
   await page.keyboard.press('Enter');
   await expect(page.getByLabel('FIADO')).toBeVisible();
 });
+
+test('PC: escribir el nombre y Enter agrega el producto; el ticket se ve al lado', async ({ page }) => {
+  await freshWithDemo(page);
+  const panel = page.getByTestId('ticket-panel');
+  await expect(panel).toContainText('Toca un producto o escribe su nombre');
+
+  // "ace" + Enter: sin tocar el mouse.
+  await page.keyboard.type('ace');
+  await expect(page.getByRole('dialog', { name: 'Buscar' })).toBeVisible();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(panel).toContainText('Aceite caja ×12');
+
+  // Otra vez: la búsqueda empieza de cero y el ticket acumula.
+  await page.keyboard.type('arroz');
+  await page.keyboard.press('Enter');
+  await expect(panel).toContainText('Arroz saco 50kg');
+  await expect(page.getByTestId('ticket-total')).toHaveText('S/ 293.00');
+
+  // Corregir desde el panel, sin abrir el detalle.
+  await panel.getByRole('button', { name: 'Agregar 1 Arroz saco 50kg' }).click();
+  await expect(page.getByTestId('ticket-total')).toHaveText('S/ 478.00');
+});

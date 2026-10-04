@@ -1,0 +1,64 @@
+.qr {
+  align-self: center;
+  width: 260px;
+  max-width: 100%;
+  background: #fff;
+  border-radius: var(--radius-lg);
+  padding: 10px;
+}
+.qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.codeRow {
+  display: flex;
+  gap: 8px;
+}
+.code {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+.or {
+  margin: 0;
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+.status {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  border: 1px solid var(--paper-line);
+  font-size: 14px;
+  font-weight: 600;
+}
+.ok {
+  color: var(--leaf);
+}
+.error {
+  color: var(--brick);
+}
+.devices {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+}
+.devices li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--paper-line);
+  font-size: 14px;
+}
+.devices li:last-child {
+  border-bottom: none;
+}
+.devices span {
+  color: var(--ink-soft);
+  text-align: right;
+}

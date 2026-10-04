@@ -39,11 +39,14 @@
 
 Abre **https://1xmanmax.github.io/ABARROTES-PRO-/** en Chrome o Edge. Para tenerla como programa, toca el ícono **Instalar** (⊕) en la barra de direcciones. En el teléfono también se puede: menú ⋮ → **Agregar a pantalla principal**.
 
+**Programa de Windows con Comet (recomendado en la PC):** ejecuta `powershell -ExecutionPolicy Bypass -File pcinstalar-windows.ps1`. Compila la app, la deja en `%LOCALAPPDATA%MiBodega` y crea el acceso directo **Mi Bodega** (escritorio y menú Inicio). La app se abre en una ventana de **Comet** (si no está instalado, en Edge o Chrome), servida por un programa pequeño de la propia PC (`mi-bodega.exe`, unos 6 MB de RAM). Así funciona sin internet desde el primer día y, como comparte los procesos de Comet, casi no suma memoria. Los datos quedan en el perfil de Comet: no borres los "datos de sitios" de `127.0.0.1`.
+
 - Funciona sin internet después de abrirla una vez.
 - En la PC se puede **escribir con el teclado**: montos, cantidades y códigos (Enter = Firmar).
-- La cuadrícula aprovecha la pantalla ancha y muestra más productos a la vez.
+- **Para vender con el teclado**, escribe el nombre del producto: se abre Buscar con lo que escribiste, y **Enter** agrega el primero (por ejemplo `arr` + Enter suma un arroz).
+- La cuadrícula aprovecha la pantalla ancha y muestra más productos a la vez. El **ticket queda siempre visible a la derecha**, con − / + para corregir sin abrir el detalle.
 
-> **Aviso:** cada instalación (APK, PC, Chrome del teléfono) tiene **sus propios datos**. No se sincronizan entre sí. Para pasar los datos de uno a otro, usa la **copia de seguridad**: créala en uno y restáurala en el otro.
+> **Sincronizar el celular con la PC por Wi-Fi:** con la PC instalada como programa (`pcinstalar-windows.ps1`), abre en la PC **Menú → Sincronizar con la PC** y escanea el QR desde el celular (**Menú → Sincronizar con la PC → Escanear QR de la PC**; un celular recién instalado lo ofrece en la primera pantalla). Desde ahí se sincronizan solos: al abrir la app, cada 5 minutos y unos segundos después de cada venta, siempre que estén en el mismo Wi-Fi. Si se vendió en los dos a la vez, se juntan todas las ventas y el stock descuenta ambas. La PC guarda la copia principal en `%LOCALAPPDATA%MiBodegadatos`, con un respaldo por día de los últimos 30 días. La versión publicada en GitHub Pages no se sincroniza: sus datos se pasan con la **copia de seguridad**.
 
 <p align="center"><img src="docs/capturas/20-pc.png" width="640" alt="Versión de PC"></p>
 
@@ -285,7 +288,7 @@ En su ficha → **Cambiar código**. Tú escribes tu código de dueño y la pers
 Porque ya se descontó la parte del día de tus gastos fijos (alquiler, luz…). Es normal en días de pocas ventas; mira la Rentabilidad de 30 días.
 
 **¿Puedo usarla en dos teléfonos, o en el teléfono y la PC a la vez?**
-Sí puedes instalarla en varios, pero **cada uno guarda sus propios datos** y no se sincronizan. Para pasar los datos, haz una copia en uno y restáurala en el otro. La sincronización automática en la nube es una fase opcional pendiente.
+Sí. El celular (APK) se sincroniza por Wi-Fi con la PC donde instalaste el programa (ver *Sincronizar el celular con la PC*, arriba); varios celulares pueden vincularse a la misma PC. No hace falta internet, pero sí estar en el mismo Wi-Fi que la PC y que la PC esté prendida.
 
 **¿Cómo imprimo?**
 Al cobrar, toca **Cobrar e imprimir**; también se puede reimprimir desde el Historial o el comprobante. Se abre el diálogo de impresión: en Android elige tu impresora (hace falta el servicio de impresión de la marca); en la PC, la impresora instalada.
@@ -307,7 +310,7 @@ No. Instalar el APK nuevo encima conserva todo. Solo desinstalar borra los datos
 | Estado de pantalla | Zustand (carrito, tickets en espera); lecturas con `useLiveQuery` |
 | Criptografía | WebCrypto: PBKDF2-SHA256 (códigos), SHA-256 (firmas), AES-GCM (copias) |
 | APK | Capacitor 8 (Android), compilado por GitHub Actions |
-| Tests | Vitest + fake-indexeddb (103 tests), Playwright en teléfono 390×844 y PC 1366×768 (15 flujos) |
+| Tests | Vitest + fake-indexeddb (110 tests), Playwright en teléfono 390×844 y PC 1366×768 (16 flujos) |
 
 ### Estructura
 
@@ -318,11 +321,14 @@ app/
                  consignación, caja, ganancias, indicadores económicos, respaldo
     db/          esquema Dexie y una función por operación atómica
                  (cobrar, fiar, cobrar deuda, entregar, liquidar, comprar, cerrar caja…)
-    features/    pantallas: sell, inventory, parties, consign, cash, stats, backup, history, settings
+    features/    pantallas: sell, inventory, parties, consign, cash, stats, backup, history, settings, sync
+    sync/        sincronización por Wi-Fi con la PC: cifrado, fusión, parches, recálculo de cachés
     ui/          componentes: Sheet, NumPad, PinPad, BarChart, Meter, ParetoChart, ScatterChart…
     i18n/es-PE.ts  todos los textos de la interfaz
   e2e/           flujos completos en el navegador (y el generador de capturas)
   android/       proyecto Android (Capacitor)
+pc/              mi-bodega.exe (Rust): sirve app/dist en esta PC y la abre en Comet;
+                 instalar-windows.ps1 la instala con acceso directo
 mi-bodega-handoff/  especificación original: SPEC, modelo de datos, diseño, mockups
 PLAN.md          fases, decisiones tomadas y propuestas pendientes
 docs/capturas/   imágenes de este README
@@ -374,6 +380,6 @@ Están en [`mi-bodega-handoff/CLAUDE.md`](mi-bodega-handoff/CLAUDE.md). Las prin
 | 5 | Caja, compras, cierre del día, inicio, ganancias, rentabilidad y análisis económico | ✅ |
 | 6a | Copia de seguridad cifrada con recordatorio semanal | ✅ |
 | 6b | Impresión directa por Bluetooth (ESC/POS) | Pendiente (opcional) |
-| 6c | Sincronización en la nube para dos teléfonos | Pendiente (opcional) |
+| 6c | Sincronización por Wi-Fi entre la PC y los celulares (como Canvas de Citas) | ✅ |
 
 Decisiones tomadas y propuestas abiertas: [`PLAN.md`](PLAN.md).

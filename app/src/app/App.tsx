@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { ReceiptPrinter } from '../print/Receipt';
-import { ToastHost } from '../ui/Toast';
+import { ToastHost } from '../ui/ToastHost';
 import { SellScreen } from '../features/sell/SellScreen';
 import { CheckoutScreen } from '../features/sell/CheckoutScreen';
 import { useSell } from '../features/sell/sellStore';
@@ -8,6 +8,7 @@ import { useSettings } from './data';
 import { bootstrap } from './bootstrap';
 import { currentRoute, installBackHandler, useNav } from './nav';
 import { OwnerSetup } from './OwnerSetup';
+import { startAutoSync } from '../sync/state';
 
 const loaders = {
   inventory: () => import('../features/inventory/InventoryScreen'),
@@ -25,6 +26,7 @@ const loaders = {
   purchase: () => import('../features/cash/PurchaseScreen'),
   settle: () => import('../features/consign/SettleScreen'),
   profit: () => import('../features/stats/ProfitScreen'),
+  sync: () => import('../features/sync/SyncScreen'),
 };
 const InventoryScreen = lazy(loaders.inventory);
 const ProductScreen = lazy(loaders.product);
@@ -41,6 +43,7 @@ const BackupScreen = lazy(loaders.backup);
 const PurchaseScreen = lazy(loaders.purchase);
 const SettleScreen = lazy(loaders.settle);
 const ProfitScreen = lazy(loaders.profit);
+const SyncScreen = lazy(loaders.sync);
 
 export function App() {
   const [ready, setReady] = useState(false);
@@ -54,6 +57,8 @@ export function App() {
     bootstrap()
       .then(() => {
         setReady(true);
+        // Sincronización con la PC (si este aparato está vinculado).
+        void startAutoSync();
         // Precargar las pantallas secundarias para que abran al instante.
         setTimeout(() => Object.values(loaders).forEach((load) => load()), 500);
       })
@@ -97,6 +102,7 @@ export function App() {
         {route.name === 'purchase' && <PurchaseScreen />}
         {route.name === 'settle' && <SettleScreen partyId={route.partyId} />}
         {route.name === 'profit' && <ProfitScreen />}
+        {route.name === 'sync' && <SyncScreen />}
       </Suspense>
       <ToastHost />
       <ReceiptPrinter />

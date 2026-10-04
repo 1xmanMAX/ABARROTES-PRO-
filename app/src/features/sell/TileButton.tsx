@@ -33,23 +33,18 @@ export const TileButton = memo(function TileButton({ product, count, disabled, o
     () => onLongPress(product),
   );
   const selected = count !== '';
+  // Sin foto, el nombre va grande arriba: se lee de lejos y no compite con ninguna letra de fondo.
   return (
     <button
       type="button"
-      className={`${styles.tile} ${selected ? styles.tileSelected : ''}`}
+      className={`${styles.tile} ${photoUrl ? '' : styles.tileNoPhoto} ${selected ? styles.tileSelected : ''}`}
       style={{ background: photoUrl ? undefined : tileGradient(product.tileColor) }}
       disabled={disabled}
       aria-label={`${product.name}, ${formatPEN(product.salePrice)}${selected ? `, ${count} en el ticket` : ''}`}
       data-product-id={product.id}
       {...press}
     >
-      {photoUrl ? (
-        <img className={styles.tilePhoto} src={photoUrl} alt="" draggable={false} />
-      ) : (
-        <span className={styles.tileInitial} aria-hidden="true">
-          {product.name.charAt(0).toUpperCase()}
-        </span>
-      )}
+      {photoUrl && <img className={styles.tilePhoto} src={photoUrl} alt="" draggable={false} />}
       {selected && (
         <span className={styles.tileCount} aria-hidden="true">
           {count}
