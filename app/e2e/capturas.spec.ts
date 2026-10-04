@@ -165,4 +165,14 @@ test('capturas de lo fácil de ver y de usar', async ({ page }) => {
   await quiet(page);
   await tile(page, 'Arroz saco 50kg').click();
   await shot(page, '24-sol-letra-grande');
+
+  // Modo ayudante (con colores y letra normales): el menú solo deja vender.
+  await menu(page, 'Ajustes');
+  await page.getByRole('button', { name: 'Normal', exact: true }).click();
+  await page.getByRole('button', { name: 'Normales', exact: true }).click();
+  await page.getByRole('button', { name: /Activar modo ayudante/ }).click();
+  await quiet(page);
+  await page.getByRole('button', { name: 'Menú' }).click();
+  await page.waitForTimeout(300);
+  await shot(page, '25-ayudante');
 });
