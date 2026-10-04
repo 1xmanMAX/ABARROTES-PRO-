@@ -9,7 +9,9 @@ import { PinCreate } from '../../ui/PinCreate';
 import { Sheet } from '../../ui/Sheet';
 import { useOwnerPin } from '../parties/usePin';
 import { isNativeApp } from '../../print/nativePrint';
-import type { ThemePref } from '../../db/types';
+import type { ContrastPref, TextSize, ThemePref } from '../../db/types';
+import { useNav } from '../../app/nav';
+import { speak } from '../../ui/speak';
 import { t } from '../../i18n/es-PE';
 import { Button } from '../../ui/Button';
 import { ScreenHeader } from '../../ui/ScreenHeader';
@@ -18,6 +20,8 @@ import { toast, toastError } from '../../ui/toast';
 import { anyTicketHasLines, useSell } from '../sell/sellStore';
 
 const THEMES: ThemePref[] = ['light', 'dark', 'system'];
+const TEXT_SIZES: TextSize[] = ['normal', 'grande', 'muy-grande'];
+const CONTRASTS: ContrastPref[] = ['normal', 'sol'];
 
 export default function SettingsScreen() {
   const settings = useSettings();
@@ -27,6 +31,7 @@ export default function SettingsScreen() {
   const [persisted, setPersisted] = useState<boolean | null>(null);
   const [changingPin, setChangingPin] = useState<string | null>(null);
   const [askOwner, ownerSheet] = useOwnerPin();
+  const back = useNav((st) => st.back);
 
   useEffect(() => {
     // En el APK los datos viven en el almacenamiento propio de la app: no se borran solos.
@@ -59,6 +64,53 @@ export default function SettingsScreen() {
     <div className={s.screen}>
       <ScreenHeader title={t.settings.title} />
       <div className={s.content}>
+        <div className={s.card}>
+          <div className={s.label} style={{ marginBottom: 10 }}>
+            {t.settings.easyTitle}
+          </div>
+          <div className={s.field}>
+            {t.settings.textSize}
+            <div className={s.segment} role="group" aria-label={t.settings.textSize}>
+              {TEXT_SIZES.map((v) => (
+                <button key={v} type="button" aria-pressed={settings.textSize === v} onClick={() => updateSettings({ textSize: v })}>
+                  {t.settings.textSizes[v]}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className={s.field} style={{ marginTop: 12 }}>
+            {t.settings.contrast}
+            <div className={s.segment} role="group" aria-label={t.settings.contrast}>
+              {CONTRASTS.map((v) => (
+                <button key={v} type="button" aria-pressed={settings.contrast === v} onClick={() => updateSettings({ contrast: v })}>
+                  {t.settings.contrasts[v]}
+                </button>
+              ))}
+            </div>
+            <span className={s.muted}>{t.settings.contrastHint}</span>
+          </div>
+          <label className={s.check} style={{ marginTop: 8 }}>
+            <input type="checkbox" checked={settings.voice} onChange={(e) => updateSettings({ voice: e.target.checked })} />
+            {t.settings.voice}
+          </label>
+          {settings.voice && (
+            <Button block variant="plain" onClick={() => void speak(t.settings.voiceSample)}>
+              🔊 {t.settings.voiceTest}
+            </Button>
+          )}
+          <p className={s.muted}>{t.settings.voiceHint}</p>
+          <Button
+            block
+            onClick={async () => {
+              await updateSettings({ helperMode: true });
+              toast(t.settings.helperStarted, 'success');
+              back();
+            }}
+          >
+            🧒 {t.settings.helperOn}
+          </Button>
+          <p className={s.muted}>{t.settings.helperHint}</p>
+        </div>
         <label className={s.field}>
           {t.settings.shopName}
           <input className={s.input} value={shopName} onChange={(e) => setShopName(e.target.value)} onBlur={saveTexts} />
@@ -127,6 +179,7 @@ export default function SettingsScreen() {
             ))}
           </div>
         </div>
+
 
         <Button block onClick={reorder}>
           {t.settings.reorder}

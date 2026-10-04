@@ -22,17 +22,17 @@
 }
 .name {
   font-weight: 700;
-  font-size: 15px;
+  font-size: 1rem;
 }
 .meta {
   display: flex;
   gap: 6px;
-  font-size: 12px;
+  font-size: 0.875rem;
   color: var(--ink-soft);
   flex-wrap: wrap;
 }
 .badge {
-  font-size: 11px;
+  font-size: 0.875rem;
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 6px;
@@ -58,7 +58,7 @@
 .balance {
   font-family: var(--font-mono);
   font-weight: 700;
-  font-size: 28px;
+  font-size: 1.75rem;
 }
 .balanceOwes {
   color: var(--brick);
@@ -66,7 +66,7 @@
 .warn {
   color: var(--brick);
   font-weight: 700;
-  font-size: 14px;
+  font-size: 0.9375rem;
   margin: 0;
 }
 .actions {
@@ -80,7 +80,7 @@
   gap: 10px;
   padding: 8px 0;
   border-bottom: 1px dashed var(--paper-line);
-  font-size: 14px;
+  font-size: 0.9375rem;
   background: none;
   border-left: none;
   border-right: none;
@@ -93,7 +93,7 @@
   flex-direction: column;
 }
 .histDate {
-  font-size: 12px;
+  font-size: 0.875rem;
   color: var(--ink-soft);
 }
 .charge {
@@ -109,7 +109,7 @@
 .amountDisplay {
   font-family: var(--font-mono);
   font-weight: 700;
-  font-size: 34px;
+  font-size: 2.125rem;
   text-align: center;
 }
 .overdueTag {

@@ -87,7 +87,7 @@ export function CreditPanel({ total, onSign }: Props) {
       {selected && credit && (
         <div className={s.card} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontWeight: 700 }}>{t.checkout.newBalance(firstName)}</span>
-          <span className={`mono ${styles.owes}`} style={{ fontSize: 22 }} data-testid="new-balance">
+          <span className={`mono ${styles.owes}`} style={{ fontSize: '1.4375rem' }} data-testid="new-balance">
             {formatPEN(credit.newBalance)}
           </span>
         </div>

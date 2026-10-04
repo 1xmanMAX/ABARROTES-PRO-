@@ -1,0 +1,114 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: var(--paper);
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  overflow-y: auto;
+  animation: appear 140ms ease-out;
+}
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+.card {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: calc(20px + env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom));
+}
+.head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.check {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: var(--leaf);
+  color: var(--surface);
+  font-size: 1.75rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.title {
+  margin: 0;
+  font-size: 1.625rem;
+  font-weight: 800;
+}
+.amounts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.amounts > div {
+  background: var(--surface);
+  border: var(--border-w) solid var(--paper-line);
+  border-radius: var(--radius-lg);
+  padding: 10px 12px;
+}
+.amounts dt {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.amounts dd {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+/* El vuelto es lo único enorme de la pantalla: no se puede pasar por alto. */
+.changeBox {
+  text-align: center;
+  border: 4px solid var(--leaf);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  padding: 14px 12px;
+}
+.changeLabel {
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--leaf);
+}
+.change {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: clamp(2.75rem, 14vw, 4rem);
+  line-height: 1.1;
+  color: var(--ink);
+}
+.done {
+  min-height: 72px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--gold);
+  color: var(--cover-dark);
+  font-size: 1.375rem;
+  font-weight: 800;
+  margin-top: 6px;
+}
+/* Lejos del botón principal y con otro aspecto: no se toca por error. */
+.undo {
+  align-self: center;
+  min-height: 48px;
+  margin-top: 18px;
+  padding: 0 18px;
+  border: var(--border-w) solid var(--danger);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--danger);
+  font-size: 1rem;
+  font-weight: 700;
+}

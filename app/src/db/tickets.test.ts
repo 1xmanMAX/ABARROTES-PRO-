@@ -67,6 +67,20 @@ describe('tickets', () => {
     expect(closed2.digitalRef).toBe('456');
   });
 
+  it('un doble toque en Cobrar no cobra dos veces; marca las ventas del ayudante', async () => {
+    const arroz = await createProduct(base, 10);
+    const t = await openTicket();
+    await saveOpenTicketLines(t.id, [line(arroz, 1)]);
+    const pay = { method: 'cash', cashReceived: 20000, byHelper: true } as const;
+    const results = await Promise.allSettled([checkoutTicket(t.id, pay), checkoutTicket(t.id, pay)]);
+    expect(results.filter((r) => r.status === 'fulfilled')).toHaveLength(1);
+    expect((await db.products.get(arroz))!.stock).toBe(9);
+    expect(await db.cashMovements.count()).toBe(1);
+    const closed = (await db.tickets.get(t.id))!;
+    expect(closed.byHelper).toBe(true);
+    expect(closed.change).toBe(1500);
+  });
+
   it('no deja cobrar con efectivo insuficiente ni sin stock, y no escribe nada', async () => {
     const arroz = await createProduct(base, 1);
     const t = await openTicket();

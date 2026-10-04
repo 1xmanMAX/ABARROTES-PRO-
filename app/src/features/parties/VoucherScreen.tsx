@@ -72,7 +72,7 @@ export default function VoucherScreen({ signatureId }: { signatureId: string }) 
             <Row label="" value={intact ? `✓ ${t.voucher.intact}` : `⚠ ${t.voucher.modified}`} strong />
           </div>
         </div>
-        <div className={s.card} style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
+        <div className={s.card} style={{ fontSize: '0.875rem', color: 'var(--ink-soft)' }}>
           {t.voucher.note(firstName)}
         </div>
         <div className={styles.actions}>

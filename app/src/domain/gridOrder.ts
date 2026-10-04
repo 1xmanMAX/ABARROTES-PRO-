@@ -60,8 +60,32 @@ export function searchProducts<T extends { name: string; baseName?: string; cate
   const terms = q.split(/\s+/);
   return products.filter((p) => {
     const hay = normalize(`${p.name} ${p.baseName ?? ''} ${p.category ?? ''}`);
-    return terms.every((t) => hay.includes(t));
+    const words = hay.split(/\s+/);
+    return terms.every((t) => hay.includes(t) || words.some((w) => nearPrefix(t, w)));
   });
+}
+
+/**
+ * Tolerancia a errores de escritura (niños, apuro): "arros" encuentra "arroz" y "asucar",
+ * "azúcar". Compara el término con el comienzo de la palabra admitiendo 1 letra distinta
+ * (2 si el término es largo). Los términos de menos de 3 letras deben coincidir exacto.
+ */
+export function nearPrefix(term: string, word: string): boolean {
+  if (term.length < 3) return false;
+  const max = term.length >= 7 ? 2 : 1;
+  return Math.min(editDistance(term, word.slice(0, term.length)), editDistance(term, word.slice(0, term.length + 1))) <= max;
+}
+
+function editDistance(a: string, b: string): number {
+  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) {
+      cur[j] = Math.min(prev[j]! + 1, cur[j - 1]! + 1, prev[j - 1]! + (a[i - 1] === b[j - 1] ? 0 : 1));
+    }
+    prev = cur;
+  }
+  return prev[b.length]!;
 }
 
 export function normalize(s: string): string {

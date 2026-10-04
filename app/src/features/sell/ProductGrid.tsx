@@ -14,16 +14,21 @@ interface Props {
   onSearch: () => void;
 }
 
-const GAP = 8;
+const GAP = 10;
 /** En pantallas anchas (PC, tablet) el tile no pasa de este tamaño: entran más columnas. */
 const MAX_TILE = 150;
+/** Lado mínimo de un tile de venta (CLAUDE.md regla 8: 96 px o más). Crece con la letra. */
+const MIN_TILE = 96;
 
 /**
  * Columnas y cuántos tiles caben sin scroll (el último siempre es "Buscar").
- * En el teléfono son 3 columnas (SPEC §2.1); en pantallas anchas, las que entren.
+ * En el teléfono son 3 columnas (SPEC §2.1); con letra grande, 2 para que el nombre quepa;
+ * en pantallas anchas, las que entren. `scale` = tamaño de letra actual / 16 px.
  */
-export function gridLayout(width: number, height: number): { cols: number; capacity: number } {
-  const cols = Math.max(3, Math.floor((width + GAP) / (MAX_TILE + GAP)));
+export function gridLayout(width: number, height: number, scale = 1): { cols: number; capacity: number } {
+  const fitMin = Math.min(3, Math.floor((width + GAP) / (MIN_TILE * scale + GAP)));
+  const fitMax = Math.floor((width + GAP) / (MAX_TILE * scale + GAP));
+  const cols = Math.max(2, fitMin, fitMax);
   const tile = (width - GAP * (cols - 1)) / cols;
   const rows = Math.max(2, Math.floor((height + GAP) / (tile + GAP)));
   return { cols, capacity: rows * cols - 1 };
@@ -37,7 +42,8 @@ function useCapacity(ref: React.RefObject<HTMLDivElement | null>): { cols: numbe
     const measure = () => {
       const { width, height } = el.getBoundingClientRect();
       if (!width || !height) return;
-      const next = gridLayout(width, height);
+      const scale = parseFloat(getComputedStyle(document.documentElement).fontSize) / 16 || 1;
+      const next = gridLayout(width, height, scale);
       setLayout((cur) => (cur.cols === next.cols && cur.capacity === next.capacity ? cur : next));
     };
     measure();

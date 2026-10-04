@@ -53,6 +53,8 @@ export interface Ticket extends Timestamps {
   cashReceived: Cents | null;
   change: Cents | null;
   digitalRef: string | null;
+  /** Cobrada en modo ayudante (para revisar luego quién atendió). */
+  byHelper?: boolean;
   signatureId: string | null;
   dayKey: string;
   closedAt: number | null;
@@ -138,6 +140,8 @@ export interface AuditEntry {
 }
 
 export type ThemePref = 'light' | 'dark' | 'system';
+export type TextSize = 'normal' | 'grande' | 'muy-grande';
+export type ContrastPref = 'normal' | 'sol';
 
 export interface Settings {
   id: 'main';
@@ -154,6 +158,13 @@ export interface Settings {
   /** Rebaja máxima por regateo por ticket. */
   maxHaggle: Cents;
   theme: ThemePref;
+  /** Accesibilidad (de este aparato; no se sincronizan). */
+  textSize: TextSize;
+  contrast: ContrastPref;
+  /** Leer en voz alta el total y el vuelto. */
+  voice: boolean;
+  /** Modo ayudante: solo vender; salir pide el código de dueño. */
+  helperMode: boolean;
   lastBackupAt: number | null;
 }
 

@@ -1,0 +1,98 @@
+.pieces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+/* Billete: rectángulo apaisado con el valor grande en blanco sobre un tono oscuro (≥ 7:1). */
+.bill,
+.coin {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.bill {
+  width: 5.5rem;
+  height: 3.25rem;
+  border-radius: 6px;
+  color: #ffffff;
+  border: 3px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 0 0 2px var(--ink),
+    inset 0 0 0 6px rgba(255, 255, 255, 0.12);
+}
+/* Moneda: círculo metálico con el valor en tinta oscura. */
+.coin {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  color: #14110c;
+  border: 3px solid #6b5a2e;
+}
+.value {
+  font-size: 1.375rem;
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 1px;
+}
+.value small {
+  font-size: 0.75rem;
+}
+.coin .value {
+  font-size: 1.0625rem;
+}
+.count {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 6px;
+  border-radius: 1rem;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--paper);
+}
+.rest {
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+/* Colores aproximados de cada denominación del sol. */
+.p20000 {
+  background: #5b2c83;
+}
+.p10000 {
+  background: #1b4f8f;
+}
+.p5000 {
+  background: #9b1f4a;
+}
+.p2000 {
+  background: #a04a0e;
+}
+.p1000 {
+  background: #1e6b3a;
+}
+.p500,
+.p200 {
+  background: radial-gradient(circle, #e6c25a 0 52%, #c9cbcc 54%);
+}
+.p100 {
+  background: #d4d6d8;
+  border-color: #6f7275;
+}
+.p50,
+.p20,
+.p10 {
+  background: #e8c766;
+}

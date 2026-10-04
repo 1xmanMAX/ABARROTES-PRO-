@@ -3,12 +3,26 @@ import { ReceiptPrinter } from '../print/Receipt';
 import { ToastHost } from '../ui/ToastHost';
 import { SellScreen } from '../features/sell/SellScreen';
 import { CheckoutScreen } from '../features/sell/CheckoutScreen';
+import { SaleDone } from '../features/sell/SaleDone';
 import { useSell } from '../features/sell/sellStore';
 import { useSettings } from './data';
 import { bootstrap } from './bootstrap';
 import { currentRoute, installBackHandler, useNav } from './nav';
 import { OwnerSetup } from './OwnerSetup';
 import { startAutoSync } from '../sync/state';
+
+function usePrefersMoreContrast(): boolean {
+  const query = '(prefers-contrast: more)';
+  const [more, setMore] = useState(() => window.matchMedia?.(query).matches ?? false);
+  useEffect(() => {
+    const mq = window.matchMedia?.(query);
+    if (!mq) return;
+    const onChange = () => setMore(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  return more;
+}
 
 const loaders = {
   inventory: () => import('../features/inventory/InventoryScreen'),
@@ -74,6 +88,20 @@ export function App() {
     else root.dataset.theme = settings.theme;
   }, [settings.theme]);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    if (settings.textSize === 'normal') delete root.dataset.text;
+    else root.dataset.text = settings.textSize;
+  }, [settings.textSize]);
+
+  // Modo Sol: elegido en Ajustes o pedido por el sistema ("aumentar contraste").
+  const prefersMore = usePrefersMoreContrast();
+  useEffect(() => {
+    const root = document.documentElement;
+    if (settings.contrast === 'sol' || prefersMore) root.dataset.contrast = 'sol';
+    else delete root.dataset.contrast;
+  }, [settings.contrast, prefersMore]);
+
   if (error) return <p style={{ padding: 16 }}>No se pudo abrir la base de datos: {error}</p>;
   if (!ready || !loaded) return null;
   // SPEC §9.5: el código de dueño se crea en el primer arranque.
@@ -104,6 +132,7 @@ export function App() {
         {route.name === 'profit' && <ProfitScreen />}
         {route.name === 'sync' && <SyncScreen />}
       </Suspense>
+      <SaleDone />
       <ToastHost />
       <ReceiptPrinter />
     </>

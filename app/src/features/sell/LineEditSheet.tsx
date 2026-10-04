@@ -20,11 +20,14 @@ interface Props {
   maxQty: number;
   onSave: (qty: number, price: number | null) => void;
   onClose: () => void;
+  /** Modo ayudante: solo cantidad, el precio no se toca. */
+  qtyOnly?: boolean;
 }
 
 /** Toque largo en un tile: cantidad exacta y precio de la línea (descuento). */
-export function LineEditSheet({ product, maxUnitDiscount, line, maxQty, onSave, onClose }: Props) {
-  const [field, setField] = useState<'qty' | 'price'>('qty');
+export function LineEditSheet({ product, maxUnitDiscount, line, maxQty, onSave, onClose, qtyOnly = false }: Props) {
+  const [fieldChoice, setField] = useState<'qty' | 'price'>('qty');
+  const field = qtyOnly ? 'qty' : fieldChoice;
   const [qtyText, setQtyText] = useState(line ? formatQty(product, line.qty) : '');
   const [priceText, setPriceText] = useState(centsToInput(line?.priceOverride ?? product.salePrice));
 
@@ -65,20 +68,27 @@ export function LineEditSheet({ product, maxUnitDiscount, line, maxQty, onSave, 
         </Button>
       }
     >
-      <div className={s.segment} role="group">
-        <button type="button" aria-pressed={field === 'qty'} onClick={() => setField('qty')}>
-          {t.sell.qty}
-        </button>
-        <button type="button" aria-pressed={field === 'price'} onClick={() => setField('price')}>
-          {t.sell.price}
-        </button>
-      </div>
+      {!qtyOnly && (
+        <div className={s.segment} role="group">
+          <button type="button" aria-pressed={field === 'qty'} onClick={() => setField('qty')}>
+            {t.sell.qty}
+          </button>
+          <button type="button" aria-pressed={field === 'price'} onClick={() => setField('price')}>
+            {t.sell.price}
+          </button>
+        </div>
+      )}
       <div className={styles.editDisplay}>
         <button type="button" className={field === 'qty' ? styles.editActive : ''} onClick={() => setField('qty')}>
           <span className={s.label}>{t.sell.qty}</span>
           <span className="mono">{qtyText || '0'}</span>
         </button>
-        <button type="button" className={field === 'price' ? styles.editActive : ''} onClick={() => setField('price')}>
+        <button
+          type="button"
+          className={field === 'price' ? styles.editActive : ''}
+          disabled={qtyOnly}
+          onClick={() => setField('price')}
+        >
           <span className={s.label}>
             {t.sell.price} {t.sell.each}
           </span>

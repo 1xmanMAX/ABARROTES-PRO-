@@ -16,7 +16,7 @@ export function OwnerSetup() {
     return (
       <div className={s.screen}>
         <div className={s.content}>
-          <h1 style={{ margin: 0, fontSize: 22 }}>{t.sync.title}</h1>
+          <h1 style={{ margin: 0, fontSize: '1.4375rem' }}>{t.sync.title}</h1>
           <SyncPanel />
           <Button onClick={() => setLinking(false)}>{t.common.back}</Button>
         </div>
@@ -26,7 +26,7 @@ export function OwnerSetup() {
   return (
     <div className={s.screen}>
       <div className={s.content} style={{ justifyContent: 'center' }}>
-        <h1 style={{ margin: 0, fontSize: 22 }}>{t.pin.ownerSetupTitle}</h1>
+        <h1 style={{ margin: 0, fontSize: '1.4375rem' }}>{t.pin.ownerSetupTitle}</h1>
         <p className={s.muted}>{t.pin.ownerSetupText}</p>
         <PinCreate
           title={t.pin.ownerNew}

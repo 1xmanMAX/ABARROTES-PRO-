@@ -191,7 +191,7 @@ export function SellScreen() {
 
   return (
     <div className={styles.screen}>
-      <SellHeader onMenu={() => setOverlay({ kind: 'menu' })}>
+      <SellHeader onMenu={() => setOverlay({ kind: 'menu' })} helper={settings.helperMode}>
         <TicketTabs
           tabs={tabs}
           activeId={activeId}
@@ -206,6 +206,7 @@ export function SellScreen() {
       <main className={styles.main}>
         <SuggestionRow products={suggestions} onTap={onTap} />
         <ProductGrid
+          key={settings.textSize}
           products={gridProducts}
           qtyInActive={qtyInActive}
           available={available}
@@ -271,6 +272,7 @@ export function SellScreen() {
         <LineEditSheet
           product={editProduct}
           maxUnitDiscount={settings.maxHaggle}
+          qtyOnly={settings.helperMode}
           line={active.lines.find((l) => l.productId === editProduct.id)}
           maxQty={available(editProduct) + (qtyInActive.get(editProduct.id) ?? 0)}
           onSave={(qty, price) => {
@@ -294,10 +296,11 @@ export function SellScreen() {
   );
 }
 
-function SellHeader({ onMenu, children }: { onMenu: () => void; children?: React.ReactNode }) {
+function SellHeader({ onMenu, helper, children }: { onMenu: () => void; helper?: boolean; children?: React.ReactNode }) {
   return (
     <header className={styles.header}>
       <button type="button" className={styles.menuBtn} aria-label={t.sell.menu} onClick={onMenu}>
+        {helper && <span className={styles.helperBadge}>🧒</span>}
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
           <path d="M4 7h16" />
           <path d="M4 12h16" />
