@@ -33,6 +33,8 @@ export interface SyncSummary {
   sent: number;
   bytes: number;
   group: GroupMember[];
+  /** Etiqueta de los datos de la copia justo después de este guardado (para ver si llegó algo nuevo). */
+  etiqueta?: string;
 }
 
 export async function synchronize({
@@ -74,7 +76,7 @@ export async function synchronize({
     const merged = base ? merge3(base, local.data, remote, tables, store.rules) : merge3(null, remote, local.data, tables, store.rules);
     const result = store.finalize(merged.result);
     const ops = diff(remote, result);
-    let w: { grupo?: GroupMember[] };
+    let w: { grupo?: GroupMember[]; etiqueta?: string };
     try {
       onProgress(ops.length ? `Enviando ${ops.length} cambio${ops.length === 1 ? '' : 's'}…` : 'Sin cambios que enviar…');
       w = await connection.write(
@@ -112,6 +114,7 @@ export async function synchronize({
       sent: ops.length,
       bytes: sizeOf(r.modo === 'parche' ? r.parche : r.datos) + sizeOf(full ? result : ops),
       group: w.grupo ?? r.grupo ?? [],
+      etiqueta: w.etiqueta,
     };
   }
 }

@@ -1,31 +1,38 @@
 //! Servidor HTTP de Mi Bodega en la PC. Adaptado de Canvas de Citas (receptor/sincro/src/servidor.rs).
 //! - `/sync/*`: sincronización con los aparatos de la red local. Todo va cifrado con la clave de
 //!   vinculación y cada petición la demuestra con la cabecera X-Bodega-Prueba.
+//! - `/sync/nexo/*`: el grupo de aparatos de Nexo (ver `nodo.rs`), con la misma clave.
 //! - Lo demás: la app (carpeta `web/`), solo para esta misma PC. En `index.html` se inyecta
 //!   `window.miBodegaPc` con el código de vinculación y su QR.
 use crate::carpeta::Carpeta;
 use crate::cifrado::{ahora_ms, Clave};
+use crate::nodo::{self, NodoNexo};
 use crate::parche;
 use serde_json::json;
 use std::io::Read;
 use std::net::UdpSocket;
 use std::path::{Component, Path, PathBuf};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, OnceLock};
 use tiny_http::{Header, Request, Response, Server};
 
 pub const PUERTO: u16 = 47482;
 pub const TOPE_CUERPO: usize = 100 * 1024 * 1024;
 
 /// Comprobar la etiqueta y escribir van juntos: dos guardados a la vez no pueden pasar ambos.
-static ESCRITURA: Mutex<()> = Mutex::new(());
+/// Nexo también lo toma al escribir un registro que llegó de otro aparato.
+pub static ESCRITURA: Mutex<()> = Mutex::new(());
 
 pub struct Sincro {
-    pub carpeta: Carpeta,
+    pub carpeta: Arc<Carpeta>,
     pub clave: Clave,
     pub clave_b64: String,
     pub puerto: u16,
     /// Carpeta con la app (index.html, storage.js, sincro/…).
     pub web: PathBuf,
+    /// Nexo, cuando terminó de arrancar (ver `iniciar_nexo`).
+    pub nexo: OnceLock<Arc<NodoNexo>>,
+    /// Por qué Nexo no arrancó, si falló.
+    pub nexo_error: Mutex<Option<String>>,
 }
 
 pub struct Respuesta {
@@ -110,6 +117,18 @@ fn tipo_de(ruta: &Path) -> &'static str {
 }
 
 impl Sincro {
+    pub fn nuevo(datos: PathBuf, clave: Clave, clave_b64: String, puerto: u16, web: PathBuf) -> Sincro {
+        Sincro {
+            carpeta: Arc::new(Carpeta::nueva(datos)),
+            clave,
+            clave_b64,
+            puerto,
+            web,
+            nexo: OnceLock::new(),
+            nexo_error: Mutex::new(None),
+        }
+    }
+
     pub fn codigo_con(&self, ip: &str) -> String {
         format!("mibodega-sync://{}:{}/#{}", ip, self.puerto, self.clave_b64)
     }
@@ -142,6 +161,8 @@ impl Sincro {
             ("GET", "/sync/hola") => Respuesta::texto(200, self.clave.cifrar_json(&json!({"app": "mibodega-sincro", "v": 1}))),
             ("POST", "/sync/v2/leer") => self.leer_v2(cuerpo),
             ("POST", "/sync/v2/escribir") => self.escribir_v2(cuerpo),
+            ("POST", "/sync/nexo/estado") => self.nexo_estado(),
+            ("POST", "/sync/nexo/orden") => self.nexo_orden(cuerpo),
             _ => Respuesta::vacia(404),
         }
     }
@@ -268,9 +289,63 @@ impl Sincro {
         if let Err(e) = self.carpeta.guardar_base(id, &resultado) {
             return Respuesta::texto(500, e.to_string());
         }
+        // Ya guardado: Nexo lleva a los demás aparatos lo que cambió aquí (en otro hilo, para no
+        // demorar la respuesta; Nexo lee los registros de la copia que se acaba de escribir).
+        if let Some(n) = self.nexo.get() {
+            let cambios = nodo::diferencias(&actual, &resultado, &tocadas);
+            if !cambios.is_empty() {
+                let n = n.clone();
+                std::thread::spawn(move || n.avisar(&cambios));
+            }
+        }
         let _ = self.carpeta.anotar_aparato(id, "", ahora_ms(), true);
         self.cifrada(json!({"etiqueta": self.carpeta.etiqueta(), "huella": parche::huella(&resultado), "escritas": tocadas, "grupo": self.carpeta.grupo()}))
     }
+}
+
+impl Sincro {
+    /// Estado del grupo de Nexo, más la etiqueta de los datos (la app ve si llegó algo nuevo).
+    fn nexo_estado(&self) -> Respuesta {
+        let mut v = match self.nexo.get() {
+            Some(n) => n.estado(),
+            None => {
+                let error = self.nexo_error.lock().unwrap_or_else(|e| e.into_inner()).clone();
+                json!({"activo": false, "error": error})
+            }
+        };
+        v["etiqueta"] = json!(self.carpeta.etiqueta());
+        self.cifrada(v)
+    }
+
+    /// `{orden, …}`: crear, unirse, expulsar, renovar, salir, renombrar, sincronizar.
+    fn nexo_orden(&self, cuerpo: &[u8]) -> Respuesta {
+        let pedido = match self.cuerpo_json(cuerpo) {
+            Ok(v) => v,
+            Err(r) => return r,
+        };
+        let Some(n) = self.nexo.get() else {
+            return self.cifrada(json!({"error": "La sincronización entre aparatos todavía está arrancando."}));
+        };
+        match n.orden(pedido["orden"].as_str().unwrap_or(""), &pedido) {
+            Ok(mut v) => {
+                v["ok"] = json!(true);
+                self.cifrada(v)
+            }
+            Err(e) => self.cifrada(json!({"error": e})),
+        }
+    }
+}
+
+/// Arranca Nexo en otro hilo (abrirlo puede tardar: revisa todos los registros).
+pub fn iniciar_nexo(s: &Arc<Sincro>, dir: PathBuf, nombre: String, red: nodo::Red) {
+    let s = s.clone();
+    std::thread::spawn(move || match NodoNexo::abrir(dir, &nombre, s.carpeta.clone(), &ESCRITURA, red) {
+        Ok(n) => {
+            NodoNexo::guardar_cada_segundo(s.carpeta.clone(), &ESCRITURA);
+            let _ = s.nexo.set(Arc::new(n));
+        }
+        Err(e) => *s.nexo_error.lock().unwrap_or_else(|e| e.into_inner()) = Some(nodo::mensaje(&e)),
+    });
 }
 
 fn cabecera(k: &str, v: &str) -> Header {
@@ -309,6 +384,12 @@ fn atender_http(s: &Sincro, mut rq: Request) {
 
 /// Abre el puerto. La clave se lee de `clave_archivo` o se crea (así el celular sigue vinculado).
 pub fn preparar(datos: PathBuf, web: PathBuf, clave_archivo: &Path, puerto: u16) -> std::io::Result<(Arc<Sincro>, Server)> {
+    preparar_en("0.0.0.0", datos, web, clave_archivo, puerto)
+}
+
+/// Como `preparar`, escuchando en `host` ("127.0.0.1" en el celular: solo la propia app; el
+/// puerto 0 elige uno libre).
+pub fn preparar_en(host: &str, datos: PathBuf, web: PathBuf, clave_archivo: &Path, puerto: u16) -> std::io::Result<(Arc<Sincro>, Server)> {
     let guardada = std::fs::read_to_string(clave_archivo).ok().and_then(|k| Clave::desde_base64(&k).ok().map(|c| (c, k.trim().to_string())));
     let (clave, clave_b64) = match guardada {
         Some(x) => x,
@@ -321,9 +402,9 @@ pub fn preparar(datos: PathBuf, web: PathBuf, clave_archivo: &Path, puerto: u16)
             (c, k)
         }
     };
-    let server = Server::http(("0.0.0.0", puerto)).map_err(|e| std::io::Error::new(std::io::ErrorKind::AddrInUse, e.to_string()))?;
+    let server = Server::http((host, puerto)).map_err(|e| std::io::Error::new(std::io::ErrorKind::AddrInUse, e.to_string()))?;
     let puerto = server.server_addr().to_ip().map(|a| a.port()).unwrap_or(puerto);
-    Ok((Arc::new(Sincro { carpeta: Carpeta::nueva(datos), clave, clave_b64, puerto, web }), server))
+    Ok((Arc::new(Sincro::nuevo(datos, clave, clave_b64, puerto, web)), server))
 }
 
 /// Atiende peticiones hasta que se cierre el servidor (un hilo por petición).

@@ -1,0 +1,18 @@
+[package]
+name = "mi-bodega-movil"
+version = "0.1.0"
+edition = "2021"
+description = "Mi Bodega en el celular: la copia principal y Nexo dentro del APK (lo arranca NodoPlugin.java)"
+publish = false
+
+[lib]
+name = "mibodega_movil"
+crate-type = ["cdylib"]
+
+[dependencies]
+mi-bodega = { path = ".." }
+jni = "0.21"
+serde_json = "1.0"
+tokio = { version = "1", features = ["sync"] }
+nexo = { git = "https://github.com/1xmanMAX/THE-WORLD-NEX", rev = "95caa907b8c68bff32cfc1aaf5326d114907e5d9" }
+nexo-red = { git = "https://github.com/1xmanMAX/THE-WORLD-NEX", rev = "95caa907b8c68bff32cfc1aaf5326d114907e5d9" }

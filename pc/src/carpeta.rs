@@ -1,11 +1,16 @@
 //! La carpeta de datos en la PC: un JSON por colección (la copia principal de Mi Bodega),
 //! `.sincro/` con la base de cada aparato y `respaldos/<fecha>/` con una copia por día.
 //! Adaptado de Canvas de Citas (receptor/sincro/src/carpeta.rs).
+//!
+//! Los datos se leen una vez y quedan en memoria: los aparatos los leen y escriben enteros (por
+//! HTTP) y Nexo registro por registro. Lo que escribe Nexo se guarda al disco en tandas
+//! (`guardar_pendientes`).
 use serde_json::{json, Map, Value};
-use sha2::{Digest, Sha256};
+use std::collections::BTreeSet;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
+use std::sync::{Mutex, OnceLock};
 
 /// Las mismas tablas que `SYNC_TABLES` en app/src/sync/local.ts (y en el mismo orden).
 pub const COLECCIONES: [&str; 17] = [
@@ -33,11 +38,57 @@ const DIAS_DE_RESPALDO: usize = 30;
 
 pub struct Carpeta {
     pub raiz: PathBuf,
+    memoria: Mutex<Option<Memoria>>,
+}
+
+/// La copia principal en memoria.
+struct Memoria {
+    /// Colección → lista de registros (cada uno con `id`).
+    datos: Map<String, Value>,
+    /// Sube con cada cambio: la etiqueta que detecta ediciones concurrentes.
+    generacion: u64,
+    /// Colecciones con cambios de Nexo todavía sin guardar al disco.
+    sucias: BTreeSet<&'static str>,
+}
+
+/// Distinto en cada arranque: una etiqueta vieja nunca coincide con una nueva.
+fn arranque() -> &'static str {
+    static A: OnceLock<String> = OnceLock::new();
+    A.get_or_init(|| {
+        let mut b = [0u8; 6];
+        let _ = getrandom::getrandom(&mut b);
+        b.iter().map(|x| format!("{x:02x}")).collect()
+    })
+}
+
+fn coleccion_valida(col: &str) -> io::Result<&'static str> {
+    COLECCIONES
+        .iter()
+        .copied()
+        .find(|c| *c == col)
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, format!("colección desconocida: {col}")))
+}
+
+fn id_de(v: &Value) -> Option<&str> {
+    v.get("id")?.as_str()
 }
 
 impl Carpeta {
     pub fn nueva(raiz: impl Into<PathBuf>) -> Self {
-        Carpeta { raiz: raiz.into() }
+        Carpeta { raiz: raiz.into(), memoria: Mutex::new(None) }
+    }
+
+    /// Ejecuta `f` con los datos en memoria (los carga del disco la primera vez).
+    fn con_memoria<T>(&self, f: impl FnOnce(&mut Memoria) -> T) -> io::Result<T> {
+        let mut g = self.memoria.lock().unwrap_or_else(|e| e.into_inner());
+        if g.is_none() {
+            let mut datos = Map::new();
+            for c in COLECCIONES {
+                datos.insert(c.into(), self.coleccion(c)?);
+            }
+            *g = Some(Memoria { datos, generacion: 0, sucias: BTreeSet::new() });
+        }
+        Ok(f(g.as_mut().expect("cargada")))
     }
 
     fn archivo(&self, col: &str) -> PathBuf {
@@ -48,14 +99,10 @@ impl Carpeta {
         fs::read(self.archivo(col)).unwrap_or_default()
     }
 
-    /// Cambia cada vez que cambia cualquiera de los JSON (detecta ediciones concurrentes).
+    /// Cambia cada vez que cambian los datos (detecta ediciones concurrentes).
     pub fn etiqueta(&self) -> String {
-        let mut h = Sha256::new();
-        for c in COLECCIONES {
-            h.update(c.as_bytes());
-            h.update(self.bytes(c));
-        }
-        h.finalize().iter().map(|b| format!("{b:02x}")).collect()
+        let generacion = self.con_memoria(|m| m.generacion).unwrap_or(u64::MAX);
+        format!("{}-{generacion}", arranque())
     }
 
     fn coleccion(&self, col: &str) -> io::Result<Value> {
@@ -67,13 +114,77 @@ impl Carpeta {
         Ok(if v.is_array() { v } else { json!([]) })
     }
 
-    /// `{products, sales, movements, settings}`.
+    /// Todas las colecciones: `{products, tickets, …}`.
     pub fn leer(&self) -> io::Result<Value> {
-        let mut m = Map::new();
-        for c in COLECCIONES {
-            m.insert(c.into(), self.coleccion(c)?);
+        self.con_memoria(|m| {
+            let mut out = Map::new();
+            for c in COLECCIONES {
+                out.insert(c.into(), m.datos.get(c).cloned().unwrap_or_else(|| json!([])));
+            }
+            Value::Object(out)
+        })
+    }
+
+    /// Los ids de una colección (para Nexo).
+    pub fn ids(&self, col: &str) -> io::Result<Vec<String>> {
+        let col = coleccion_valida(col)?;
+        self.con_memoria(|m| m.datos[col].as_array().map(|l| l.iter().filter_map(id_de).map(String::from).collect()).unwrap_or_default())
+    }
+
+    /// Un registro (para Nexo).
+    pub fn registro(&self, col: &str, id: &str) -> io::Result<Option<Value>> {
+        let col = coleccion_valida(col)?;
+        self.con_memoria(|m| m.datos[col].as_array().and_then(|l| l.iter().find(|x| id_de(x) == Some(id)).cloned()))
+    }
+
+    /// Pone (o reemplaza) un registro que llegó por Nexo. Queda pendiente de guardar al disco.
+    pub fn poner_registro(&self, col: &str, valor: Value) -> io::Result<()> {
+        let col = coleccion_valida(col)?;
+        let id = id_de(&valor).ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "registro sin id"))?.to_string();
+        self.con_memoria(|m| {
+            let lista = m.datos[col].as_array_mut().expect("lista");
+            match lista.iter().position(|x| id_de(x) == Some(id.as_str())) {
+                Some(i) if lista[i] == valor => return,
+                Some(i) => lista[i] = valor,
+                None => lista.push(valor),
+            }
+            m.generacion += 1;
+            m.sucias.insert(col);
+        })
+    }
+
+    /// Quita un registro que se borró en otro aparato (Nexo).
+    pub fn quitar_registro(&self, col: &str, id: &str) -> io::Result<()> {
+        let col = coleccion_valida(col)?;
+        self.con_memoria(|m| {
+            let lista = m.datos[col].as_array_mut().expect("lista");
+            let antes = lista.len();
+            lista.retain(|x| id_de(x) != Some(id));
+            if lista.len() != antes {
+                m.generacion += 1;
+                m.sucias.insert(col);
+            }
+        })
+    }
+
+    /// Guarda al disco lo que llegó por Nexo (una vez por tanda, no por registro).
+    pub fn guardar_pendientes(&self, hoy: &str) -> io::Result<()> {
+        let pendientes = self.con_memoria(|m| {
+            let cols = std::mem::take(&mut m.sucias);
+            cols.into_iter().map(|c| (c, m.datos[c].clone())).collect::<Vec<_>>()
+        })?;
+        if pendientes.is_empty() {
+            return Ok(());
         }
-        Ok(Value::Object(m))
+        self.respaldar(hoy)?;
+        for (c, items) in &pendientes {
+            if let Err(e) = self.escribir_atomico(&self.archivo(c), &Self::json_bonito(items)?) {
+                // Que se reintente en la próxima tanda.
+                let _ = self.con_memoria(|m| m.sucias.extend(pendientes.iter().map(|(c, _)| *c)));
+                return Err(e);
+            }
+        }
+        Ok(())
     }
 
     fn escribir_atomico(&self, destino: &Path, datos: &[u8]) -> io::Result<()> {
@@ -94,12 +205,19 @@ impl Carpeta {
     /// Escribe solo las colecciones presentes en `datos`. Antes del primer cambio de cada día
     /// guarda una copia de lo que había (`respaldos/AAAA-MM-DD/`).
     pub fn escribir(&self, datos: &Value, hoy: &str) -> io::Result<()> {
+        // Primero lo pendiente de Nexo: así el respaldo del día y los archivos quedan al día.
+        self.guardar_pendientes(hoy)?;
         self.respaldar(hoy)?;
         for c in COLECCIONES {
             if let Some(items) = datos.get(c) {
                 self.escribir_atomico(&self.archivo(c), &Self::json_bonito(items)?)?;
+                self.con_memoria(|m| {
+                    m.datos.insert(c.into(), items.clone());
+                    m.sucias.remove(c);
+                })?;
             }
         }
+        self.con_memoria(|m| m.generacion += 1)?;
         Ok(())
     }
 

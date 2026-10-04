@@ -3,5 +3,6 @@
 //! Canvas de Citas (receptor/sincro).
 pub mod carpeta;
 pub mod cifrado;
+pub mod nodo;
 pub mod parche;
 pub mod servidor;

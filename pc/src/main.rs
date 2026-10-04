@@ -5,7 +5,7 @@
 //! - `--segundo-plano`: solo el servidor, sin ventana.
 #![windows_subsystem = "windows"]
 
-use mi_bodega::servidor::{preparar, servir, PUERTO};
+use mi_bodega::servidor::{iniciar_nexo, preparar, servir, PUERTO};
 use std::io::{Read, Write};
 use std::net::TcpStream;
 use std::os::windows::process::CommandExt;
@@ -77,7 +77,12 @@ fn main() {
     if std::env::args().any(|a| a == "--segundo-plano") {
         let b = base();
         match preparar(b.join("datos"), exe_dir().join("web"), &b.join("clave.txt"), PUERTO) {
-            Ok((s, server)) => servir(s, server),
+            Ok((s, server)) => {
+                // Nexo: los celulares del grupo se sincronizan con esta PC (y entre ellos) sin vincular.
+                let nombre = std::env::var("COMPUTERNAME").map(|n| format!("PC {n}")).unwrap_or_else(|_| "PC".into());
+                iniciar_nexo(&s, b.join("nexo"), nombre, Default::default());
+                servir(s, server)
+            }
             // Puerto ocupado: normalmente porque ya hay otro servidor de Mi Bodega corriendo.
             Err(_) => std::process::exit(1),
         }

@@ -41,6 +41,15 @@ repositories {
     }
 }
 
+// Sincronización entre aparatos (Nexo, en Rust): en la compilación automática se compila la
+// biblioteca nativa antes de armar el APK (ver ../compilar-nexo.sh).
+tasks.register('compilarNexo', Exec) {
+    onlyIf { System.getenv('CI') == 'true' }
+    workingDir rootProject.projectDir
+    commandLine 'bash', 'compilar-nexo.sh'
+}
+tasks.matching { it.name == 'preBuild' }.configureEach { dependsOn 'compilarNexo' }
+
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"

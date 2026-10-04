@@ -65,7 +65,9 @@ export interface WriteRequest {
 export interface Connection {
   hello(): Promise<{ app: string }>;
   read(req: { dispositivo: string; nombre: string; base: string | null }): Promise<ReadResponse>;
-  write(req: WriteRequest): Promise<{ grupo?: GroupMember[] }>;
+  write(req: WriteRequest): Promise<{ grupo?: GroupMember[]; etiqueta?: string }>;
+  /** Grupo de aparatos (Nexo): `estado` u `orden`. Solo la copia de este aparato lo tiene. */
+  nexo?(path: 'estado' | 'orden', body: unknown): Promise<unknown>;
 }
 
 /** Tiempos máximos por petición (ms). */
@@ -113,6 +115,8 @@ export async function connect({
     hello: async () => decryptJson(k, await call('GET', '/sync/hola', undefined, timeouts.hello)),
     read: async (req) => decryptJson(k, await call('POST', '/sync/v2/leer', await encryptJson(k, req), data)),
     write: async (req) => decryptJson(k, await call('POST', '/sync/v2/escribir', await encryptJson(k, req), data)),
+    // Unirse a un grupo puede tardar: busca a los demás en la red y hace el intercambio del código.
+    nexo: async (path, body) => decryptJson(k, await call('POST', `/sync/nexo/${path}`, await encryptJson(k, body), 30_000)),
   };
 }
 

@@ -1,4 +1,3 @@
-use mi_bodega::carpeta::Carpeta;
 use mi_bodega::cifrado::Clave;
 use mi_bodega::servidor::{fecha, Sincro};
 use serde_json::json;
@@ -9,7 +8,7 @@ fn sincro(dir: &std::path::Path) -> Sincro {
     std::fs::write(web.join("index.html"), "<html><head><script src=\"a.js\"></script></head></html>").unwrap();
     std::fs::write(web.join("a.js"), "1").unwrap();
     let (clave, clave_b64) = Clave::nueva();
-    Sincro { carpeta: Carpeta::nueva(dir.join("datos")), clave, clave_b64, puerto: 47482, web }
+    Sincro::nuevo(dir.join("datos"), clave, clave_b64, 47482, web)
 }
 
 fn prueba(s: &Sincro, url: &str) -> String {
