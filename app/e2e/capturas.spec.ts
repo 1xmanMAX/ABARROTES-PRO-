@@ -136,3 +136,33 @@ test('captura de la versión de PC', async ({ browser }) => {
   await shot(page, '20-pc');
   await ctx.close();
 });
+
+test('capturas de lo fácil de ver y de usar', async ({ page }) => {
+  test.setTimeout(120_000);
+  await freshWithDemo(page);
+  await quiet(page);
+
+  // Cobro contando billetes y pantalla de vuelto.
+  await tile(page, 'Arroz saco 50kg').click();
+  await tile(page, 'Aceite caja ×12').click();
+  await page.getByRole('button', { name: 'Cobrar', exact: true }).click();
+  await page.getByRole('button', { name: '+ S/ 200' }).click();
+  await page.getByRole('button', { name: '+ S/ 100' }).click();
+  await shot(page, '21-contar-billetes', true);
+  await page.getByRole('button', { name: 'Cobrar sin ticket' }).click();
+  await expect(page.getByTestId('done-change')).toBeVisible();
+  await page.waitForTimeout(300);
+  await shot(page, '22-vuelto');
+  await page.getByRole('button', { name: 'Listo, ya di el vuelto' }).click();
+
+  // Ajustes de accesibilidad y modo Sol con letra grande.
+  await menu(page, 'Ajustes');
+  await page.getByRole('button', { name: 'Grande', exact: true }).click();
+  await page.getByRole('button', { name: /^Sol/ }).click();
+  await page.getByText('FÁCIL DE VER Y DE USAR', { exact: false }).scrollIntoViewIfNeeded();
+  await shot(page, '23-ajustes-faciles');
+  await page.goBack();
+  await quiet(page);
+  await tile(page, 'Arroz saco 50kg').click();
+  await shot(page, '24-sol-letra-grande');
+});

@@ -5,7 +5,7 @@
 .heroValue {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 48px;
+  font-size: 3rem;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
 }
@@ -25,21 +25,21 @@
   min-width: 0;
 }
 .kpiLabel {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 700;
   color: var(--ink-soft);
 }
 .kpiValue {
   font-family: var(--font-mono);
   font-weight: 700;
-  font-size: 19px;
+  font-size: 1.25rem;
   margin-top: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .kpiSub {
-  font-size: 11px;
+  font-size: 0.875rem;
   color: var(--ink-soft);
   margin-top: 2px;
 }
@@ -56,7 +56,7 @@
   gap: 10px;
   padding: 8px 0;
   border-bottom: 1px dashed var(--paper-line);
-  font-size: 14px;
+  font-size: 0.9375rem;
 }
 .topRow {
   justify-content: space-between;
@@ -88,7 +88,7 @@
   border-left: 5px solid var(--ink-soft);
   border-radius: var(--radius-lg);
   padding: 12px 14px;
-  font-size: 15px;
+  font-size: 1rem;
   font-weight: 600;
   line-height: 1.35;
 }
@@ -108,7 +108,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-size: 13px;
+  font-size: 0.875rem;
 }
 .productList {
   list-style: none;
@@ -137,22 +137,22 @@
 }
 .productName {
   font-weight: 700;
-  font-size: 15px;
+  font-size: 1rem;
 }
 .productNums {
   display: flex;
   gap: 10px;
   align-items: baseline;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 1.0625rem;
 }
 .muted {
   color: var(--ink-soft);
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 500;
 }
 .productMeta {
-  font-size: 12px;
+  font-size: 0.875rem;
   color: var(--ink-soft);
 }
 .shareTrack {
@@ -168,7 +168,7 @@
   background: var(--leaf);
 }
 .verdictChip {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 700;
   padding: 3px 8px;
   border-radius: 999px;
@@ -185,7 +185,7 @@
   color: var(--brick);
 }
 .advice {
-  font-size: 13px;
+  font-size: 0.875rem;
   line-height: 1.4;
   color: var(--ink);
   background: var(--paper);
@@ -195,7 +195,7 @@
 .amountDisplay {
   font-family: var(--font-mono);
   font-weight: 700;
-  font-size: 34px;
+  font-size: 2.125rem;
   text-align: center;
 }
 .chips {
@@ -210,7 +210,7 @@
   border-radius: 999px;
   background: var(--surface);
   font-weight: 700;
-  font-size: 13px;
+  font-size: 0.875rem;
 }
 .chip[aria-pressed='true'] {
   border-color: var(--cover);
@@ -219,12 +219,12 @@
 }
 .econHeading {
   margin: 8px 0 0;
-  font-size: 18px;
+  font-size: 1.1875rem;
   font-weight: 800;
 }
 .econTitle {
   margin: 0;
-  font-size: 15px;
+  font-size: 1rem;
   font-weight: 800;
 }
 .theoryBtn {
@@ -234,11 +234,11 @@
   min-height: 36px;
   padding: 0 12px;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 0.875rem;
   color: var(--ink-soft);
 }
 .theory {
-  font-size: 13px;
+  font-size: 0.875rem;
   line-height: 1.45;
   background: var(--paper);
   border-radius: var(--radius-sm);
@@ -247,30 +247,30 @@
 }
 .econLead {
   font-weight: 700;
-  font-size: 15px;
+  font-size: 1rem;
   margin: 8px 0;
 }
 .good {
   color: var(--leaf);
   font-weight: 700;
   margin: 6px 0;
-  font-size: 14px;
+  font-size: 0.9375rem;
 }
 .bad {
   color: var(--brick);
   font-weight: 700;
   margin: 6px 0;
-  font-size: 14px;
+  font-size: 0.9375rem;
 }
 .econTable {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 0.875rem;
   margin-top: 6px;
 }
 .econTable th {
   text-align: left;
-  font-size: 11px;
+  font-size: 0.875rem;
   color: var(--ink-soft);
   padding: 4px 0;
 }
@@ -291,7 +291,7 @@
   flex-wrap: wrap;
 }
 .tag {
-  font-size: 11px;
+  font-size: 0.875rem;
   font-weight: 700;
   padding: 2px 7px;
   border-radius: 6px;

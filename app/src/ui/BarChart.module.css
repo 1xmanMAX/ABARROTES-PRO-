@@ -6,7 +6,7 @@
 }
 .readout {
   min-height: 20px;
-  font-size: 13px;
+  font-size: 0.875rem;
 }
 .hint {
   color: var(--ink-soft);
@@ -45,7 +45,7 @@
 }
 .axis {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 0.875rem;
   fill: var(--ink-soft);
 }
 .tableToggle {
@@ -54,13 +54,13 @@
   background: none;
   color: var(--ink-soft);
   text-decoration: underline;
-  font-size: 12px;
+  font-size: 0.875rem;
   min-height: 32px;
 }
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 0.875rem;
 }
 .table td {
   padding: 4px 0;

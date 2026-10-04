@@ -48,7 +48,7 @@ export default function BackupScreen() {
         <p>{t.backup.why}</p>
         <div className={s.card}>
           <div className={s.label}>{t.backup.last}</div>
-          <div style={{ fontWeight: 800, fontSize: 18 }} data-testid="last-backup">
+          <div style={{ fontWeight: 800, fontSize: '1.1875rem' }} data-testid="last-backup">
             {settings.lastBackupAt
               ? `${formatDateTime(settings.lastBackupAt)} (${t.backup.ago(daysSince(settings.lastBackupAt, Date.now()))})`
               : t.backup.never}

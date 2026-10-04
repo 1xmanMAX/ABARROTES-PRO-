@@ -14,6 +14,10 @@ export const DEFAULT_SETTINGS: Settings = {
   ownerPin: null,
   fixedMonthlyCosts: 0,
   theme: 'light',
+  textSize: 'normal',
+  contrast: 'normal',
+  voice: false,
+  helperMode: false,
   lastBackupAt: null,
 };
 

@@ -18,3 +18,9 @@ export function tileGradient(index: number): string {
   const pair = TILE_GRADIENTS[((index % TILE_GRADIENTS.length) + TILE_GRADIENTS.length) % TILE_GRADIENTS.length]!;
   return `linear-gradient(135deg, ${pair[0]}, ${pair[1]})`;
 }
+
+/** Color sólido de la franja del tile (el tono oscuro del par: se distingue en el borde). */
+export function tileSwatch(index: number): string {
+  const n = TILE_GRADIENTS.length;
+  return TILE_GRADIENTS[((index % n) + n) % n]![1];
+}

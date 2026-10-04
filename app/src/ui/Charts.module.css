@@ -6,7 +6,7 @@
 }
 .readout {
   min-height: 20px;
-  font-size: 13px;
+  font-size: 0.875rem;
 }
 .hint {
   color: var(--ink-soft);
@@ -51,7 +51,7 @@
 .meterLabels {
   position: relative;
   margin-top: 6px;
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 700;
 }
 .meterTargetLabel {
@@ -88,7 +88,7 @@
   background: var(--paper);
 }
 .paretoName {
-  font-size: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -112,7 +112,7 @@
 }
 .paretoValue {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 0.875rem;
   white-space: nowrap;
 }
 .cls {
@@ -132,18 +132,18 @@
   stroke-dasharray: 3 3;
 }
 .quadText {
-  font-size: 10px;
+  font-size: 0.875rem;
   font-weight: 700;
   fill: var(--ink-soft);
   font-family: var(--font-display);
 }
 .axisText {
-  font-size: 10px;
+  font-size: 0.875rem;
   fill: var(--ink-soft);
   font-family: var(--font-display);
 }
 .tick {
-  font-size: 9px;
+  font-size: 0.875rem;
   fill: var(--ink-soft);
   font-family: var(--font-mono);
 }
@@ -163,7 +163,7 @@
   stroke: var(--ink);
 }
 .dotLabel {
-  font-size: 10px;
+  font-size: 0.875rem;
   font-weight: 600;
   fill: var(--ink);
   font-family: var(--font-display);

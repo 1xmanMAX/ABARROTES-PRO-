@@ -136,8 +136,8 @@ export async function discardEmptyTicket(ticketId: string): Promise<void> {
 }
 
 export type Payment =
-  | { method: 'cash'; cashReceived: Cents; haggle?: Cents }
-  | { method: 'digital'; digitalRef: string | null; haggle?: Cents };
+  | { method: 'cash'; cashReceived: Cents; haggle?: Cents; byHelper?: boolean }
+  | { method: 'digital'; digitalRef: string | null; haggle?: Cents; byHelper?: boolean };
 
 interface CloseComputation {
   lines: TicketLine[];
@@ -279,7 +279,15 @@ export async function checkoutTicket(ticketId: string, payment: Payment, now = D
     const closed = await writeClose(
       ticket,
       close,
-      { status: 'paid', paymentMethod: payment.method, haggle: payment.haggle ?? 0, cashReceived, change, digitalRef },
+      {
+        status: 'paid',
+        paymentMethod: payment.method,
+        haggle: payment.haggle ?? 0,
+        cashReceived,
+        change,
+        digitalRef,
+        ...(payment.byHelper ? { byHelper: true } : {}),
+      },
       now,
     );
     await db.cashMovements.add({

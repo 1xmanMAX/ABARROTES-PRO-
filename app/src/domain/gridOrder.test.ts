@@ -26,4 +26,12 @@ describe('gridOrder', () => {
     expect(searchProducts(list, 'azucar').map((x) => x.name)).toEqual(['Azúcar saco 50kg']);
     expect(searchProducts(list, 'saco 50').length).toBe(2);
   });
+  it('tolera errores de escritura', () => {
+    const list = [{ name: 'Azúcar saco 50kg' }, { name: 'Arroz saco 50kg' }, { name: 'Aceite caja x12' }];
+    expect(searchProducts(list, 'arros').map((x) => x.name)).toEqual(['Arroz saco 50kg']);
+    expect(searchProducts(list, 'asucar').map((x) => x.name)).toEqual(['Azúcar saco 50kg']);
+    expect(searchProducts(list, 'aseite').map((x) => x.name)).toEqual(['Aceite caja x12']);
+    // Dos letras: exacto, sin adivinar.
+    expect(searchProducts(list, 'ax').length).toBe(0);
+  });
 });

@@ -239,6 +239,24 @@ Copiada de Canvas de Citas, que ya funciona bien en la PC y el celular del dueñ
 5. **PC:** la app usa hasta 1440 px. En Vender, el ticket queda fijo a la derecha. Escribir una letra abre Buscar con esa letra, y Enter agrega el primer resultado con stock.
 6. **Arreglos:** las hojas ya no le quitaban el foco al campo de Buscar (en la PC había que hacer clic para escribir). `ui/Toast.tsx` pasó a `ui/ToastHost.tsx`: en Windows chocaba con `ui/toast.ts` y la app no compilaba.
 
+## Rápido, confiable y fácil de ver (pedido del dueño, 2026-10-03)
+
+Basado en el estudio de `docs/ESTUDIO-UX.md` (puntos de venta, niños, baja visión y color).
+
+1. **Paleta nueva** (`styles/tokens.css`): todo texto ≥ 7:1 (AAA), porque al sol el contraste cae a menos de la mitad. Entra dinero en azul y sale dinero / fiado en naranja oscuro (seguros para daltónicos), siempre con signo o palabra. El dorado ya no lleva texto blanco (2.6:1); lleva tinta oscura.
+2. **Letra:** Atkinson Hyperlegible Next y Mono (Braille Institute), incluidas en el paquete. Todo el texto pasó a `rem` (respeta la letra del sistema) con mínimo de 14 px. Ajuste propio: Normal 1 · Grande 1.15 · Muy grande 1.3.
+3. **Tiles:** el texto ya no va sobre la foto ni sobre degradados (con arroz o azúcar el blanco quedaba en 1.4:1). Franja de color arriba, nombre y precio sobre fondo liso, precio en una línea (`cqi`). Sin stock dice **Agotado** en vez de apagarse. Con letra muy grande, 2 columnas.
+4. **Modo Sol** (`data-contrast='sol'`): blanco y negro puros, bordes de 3 px. También con `prefers-contrast: more`.
+5. **Cobro:** contar billetes tocándolos; vuelto dibujado en billetes y monedas (método codicioso, óptimo con las denominaciones del sol; las de 1 y 5 céntimos ya no circulan, el resto se muestra aparte); aviso contra Yape falso en el botón ("Sí llegó · Cobrar", sin toques extra).
+6. **Pantalla de vuelto:** solo cuando hay vuelto en efectivo; se queda hasta "Listo" (el error más común con apuro es dar mal el vuelto). Sin vuelto sigue el aviso con Deshacer (ahora 6 s). La venta típica sigue en 5 toques.
+7. **Cobro doble:** ya estaba protegido (el ticket deja de estar abierto dentro de la transacción); se agregó un test de dos cobros simultáneos.
+8. **Modo ayudante:** ajuste de este aparato; solo vender (efectivo y Yape), sin precios, rebajas ni fiado, menú cerrado; salir pide el código de dueño. Las ventas quedan con `byHelper: true`.
+9. **Voz:** `@capacitor-community/text-to-speech` en el APK (el WebView de Android no trae `speechSynthesis`) y Web Speech en la PC. Los montos se dicen en palabras ("475 soles con 50 céntimos"). Nunca lee códigos.
+10. **Búsqueda tolerante:** 1 letra distinta (2 en términos largos) al comienzo de cada palabra.
+11. **Ajustes de accesibilidad no se sincronizan** (`SYNC_SETTINGS` no los incluye): el teléfono del niño puede estar en modo ayudante y la PC no.
+
+Pendiente de probar en el teléfono real: la voz con el modo avión, y que un niño cobre S/ 37 con un billete de S/ 50 sin ayuda.
+
 ## Propuestas (no implementadas; necesito tu decisión)
 
 - **Clave de la copia más larga:** la spec pide cifrar con el código de dueño, que tiene 4 dígitos (10 000 combinaciones). Dentro de la app hay bloqueo por intentos, pero quien robe el archivo puede probar las combinaciones en su computadora. Las 600 000 iteraciones lo vuelven lento (del orden de horas), no imposible. Propongo una **clave de copia aparte, de 6 o más caracteres**, que se pida solo al crear y restaurar copias. El riesgo es que, si el dueño la olvida, no puede restaurar.

@@ -1,64 +1,126 @@
+/*
+ * Paleta accesible (estudio de legibilidad, 2026-10): todo texto sobre su fondo cumple
+ * WCAG AAA (≥ 7:1), porque al sol el contraste efectivo de la pantalla cae a menos de la mitad.
+ * Entra dinero = azul, sale dinero / fiado = naranja oscuro (seguros para daltónicos,
+ * Okabe e Ito), y siempre acompañados de signo, flecha o palabra: nunca solo el color.
+ */
 :root {
-  --paper: #f3ecda;
-  --paper-line: #e1d4ac;
-  --surface: #fffdf6;
-  --ink: #21291f;
-  --ink-soft: #5c6552;
-  --cover: #2b4636;
-  --cover-dark: #1d3226;
-  --cover-ink: #f3ecda;
-  --cover-soft: #c7b98f;
-  --gold: #c89a3e;
-  --gold-dark: #a67c2b;
-  --leaf: #4c7a5d;
-  --brick: #a24632;
-  --shadow: rgba(33, 41, 31, 0.14);
-  --dash: #b9ac84;
+  --paper: #fbf7ee;
+  --paper-line: #ddd2b6; /* divisores decorativos */
+  --surface: #ffffff;
+  --ink: #14110c; /* 17.6:1 sobre --paper */
+  --ink-soft: #3d372c; /* 11.0:1 */
+  --border: #5c5446; /* bordes de controles: 7:1 */
+  --cover: #1e3a2b; /* cabecera y barra de cobro, texto blanco 12.4:1 */
+  --cover-dark: #14281d;
+  --cover-ink: #ffffff;
+  --cover-soft: #e6dcc2; /* texto secundario sobre --cover: 9.6:1 */
+  --gold: #e0b04a; /* fondo de acción principal, siempre con texto --cover-dark */
+  --gold-dark: #6e4f0a; /* dorado como texto sobre fondo claro: 7:1 */
+  --gold-ink: #f0c35c; /* dorado como texto sobre fondos oscuros: 7.6:1 */
+  --leaf: #00573f; /* éxito, vuelto: 8.1:1 */
+  --brick: #8a3b00; /* sale dinero, fiado, rebaja: 7.3:1 */
+  --danger: #9e1b1b; /* error, anular: 7.5:1 */
+  --in: #0b4f8a; /* entra dinero: 7.9:1 */
+  --focus: #0b4f8a;
+  --shadow: rgba(20, 17, 12, 0.16);
+  --dash: #5c5446;
 
-  --font-display: 'Archivo', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, 'Courier New', monospace;
+  --font-display: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  --font-mono: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
 
+  /* "Letra grande" en Ajustes la cambia (1 · 1.15 · 1.3). Todo el texto está en rem. */
+  --font-scale: 1;
+  --border-w: 2px;
   --radius-sm: 8px;
   --radius-md: 10px;
-  --radius-lg: 12px;
-  --tap-min: 44px;
-  --tap-sell: 96px;
-  --tap-primary: 56px;
+  --radius-lg: 14px;
+  --tap-min: 48px;
+  --tap-sell: 112px;
+  --tap-primary: 64px;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --paper: #161f19;
-    --paper-line: #26332b;
-    --surface: #1d2921;
-    --ink: #efe8d6;
-    --ink-soft: #aba894;
-    --cover: #0f1b15;
-    --cover-dark: #0a130e;
-    --gold: #d9ad52;
-    --gold-dark: #c89a3e;
-    --leaf: #71a886;
-    --brick: #c4694e;
-    --shadow: rgba(0, 0, 0, 0.45);
-    --dash: #4a5a4f;
+    --paper: #121110;
+    --paper-line: #3a362f;
+    --surface: #1f1d1a;
+    --ink: #f5f1e8; /* 14.9:1 */
+    --ink-soft: #cfc8ba; /* 10.1:1 */
+    --border: #a39a8a;
+    --cover: #16291f;
+    --cover-dark: #0c1912;
+    --cover-ink: #f5f1e8;
+    --cover-soft: #cfc8ba;
+    --gold: #f0c35c;
+    --gold-dark: #f0c35c;
+    --gold-ink: #f0c35c;
+    --leaf: #6eddb5;
+    --brick: #ffb070;
+    --danger: #ff9b94;
+    --in: #8ec5ff;
+    --focus: #ffd166;
+    --shadow: rgba(0, 0, 0, 0.5);
+    --dash: #a39a8a;
     color-scheme: dark;
   }
 }
 
 :root[data-theme='dark'] {
-  --paper: #161f19;
-  --paper-line: #26332b;
-  --surface: #1d2921;
-  --ink: #efe8d6;
-  --ink-soft: #aba894;
-  --cover: #0f1b15;
-  --cover-dark: #0a130e;
-  --gold: #d9ad52;
-  --gold-dark: #c89a3e;
-  --leaf: #71a886;
-  --brick: #c4694e;
-  --shadow: rgba(0, 0, 0, 0.45);
-  --dash: #4a5a4f;
+  --paper: #121110;
+  --paper-line: #3a362f;
+  --surface: #1f1d1a;
+  --ink: #f5f1e8;
+  --ink-soft: #cfc8ba;
+  --border: #a39a8a;
+  --cover: #16291f;
+  --cover-dark: #0c1912;
+  --cover-ink: #f5f1e8;
+  --cover-soft: #cfc8ba;
+  --gold: #f0c35c;
+  --gold-dark: #f0c35c;
+  --gold-ink: #f0c35c;
+  --leaf: #6eddb5;
+  --brick: #ffb070;
+  --danger: #ff9b94;
+  --in: #8ec5ff;
+  --focus: #ffd166;
+  --shadow: rgba(0, 0, 0, 0.5);
+  --dash: #a39a8a;
   color-scheme: dark;
+}
+
+/* Modo "Sol": blanco y negro puros, bordes de 3 px. Para atender a pleno sol o con poca vista. */
+:root[data-contrast='sol'] {
+  --paper: #ffffff;
+  --paper-line: #000000;
+  --surface: #ffffff;
+  --ink: #000000;
+  --ink-soft: #000000;
+  --border: #000000;
+  --cover: #000000;
+  --cover-dark: #000000;
+  --cover-ink: #ffffff;
+  --cover-soft: #ffffff;
+  --gold: #ffc629;
+  --gold-dark: #000000;
+  --gold-ink: #ffc629;
+  --leaf: #00472f;
+  --brick: #6b2d00;
+  --danger: #8a0000;
+  --in: #003a70;
+  --focus: #003a70;
+  --shadow: transparent;
+  --dash: #000000;
+  --border-w: 3px;
+  color-scheme: light;
+}
+
+/* Tamaño de letra: respeta también la escala de fuente del sistema (rem relativo a 100%). */
+:root[data-text='grande'] {
+  --font-scale: 1.15;
+}
+:root[data-text='muy-grande'] {
+  --font-scale: 1.3;
 }

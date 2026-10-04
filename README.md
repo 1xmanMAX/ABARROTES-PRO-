@@ -109,10 +109,30 @@ Una venta típica de 3 productos se hace en **5 toques**: 3 productos → Cobrar
 
 - **Lista grande de lo que lleva**, para leérsela al cliente y no cobrar de menos.
 - **Rebaja por regateo:** botones de −S/ 1 a −S/ 5, en un toque. Solo para productos marcados "admite rebaja".
-- **Efectivo:** Exacto, billetes rápidos (S/ 480, 500, 600…) u Otro monto. El **vuelto** sale en grande; si falta plata, dice **"Falta S/ X"** y no deja cobrar.
-- **Yape / Plin:** con los últimos 3 dígitos de la operación (opcional).
+- **Efectivo:** Exacto, billetes rápidos (S/ 480, 500, 600…) u Otro monto. También se pueden **tocar los billetes que entrega el cliente** (200 + 100…) y la app los suma. El **vuelto** sale en grande, **dibujado en billetes y monedas** (qué dar, de mayor a menor); si falta plata, dice **"Falta S/ X"** y no deja cobrar.
+- **Yape / Plin:** recuerda mirar el aviso en **tu** celular (los Yape falsos con capturas son una estafa frecuente). Los últimos 3 dígitos de la operación son opcionales.
 - **Fiado:** ver abajo.
-- Después de cobrar, un aviso de 3 segundos permite **Deshacer** la venta.
+- **Con vuelto**, al cobrar aparece una pantalla grande **"Da de vuelto S/ X"** con los billetes y monedas; se queda hasta tocar **"Listo"**. Sin vuelto (Exacto, Yape), un aviso de 6 segundos permite **Deshacer** la venta.
+- Tocar dos veces "Cobrar" no cobra dos veces.
+
+<br clear="right">
+
+### Fácil de ver y de usar (niños, poca vista, pleno sol)
+
+<p>
+  <img src="docs/capturas/22-vuelto.png" width="200" alt="Pantalla de vuelto">
+  <img src="docs/capturas/24-sol-letra-grande.png" width="200" alt="Modo Sol con letra grande">
+  <img src="docs/capturas/23-ajustes-faciles.png" width="200" alt="Ajustes fáciles">
+</p>
+
+En **Ajustes → Fácil de ver y de usar** (cada teléfono tiene los suyos):
+
+- **Tamaño de letra:** Normal, Grande o Muy grande. Con "Muy grande" la cuadrícula pasa a 2 columnas para que el nombre entre completo. También respeta el tamaño de letra del teléfono.
+- **Colores "Sol":** blanco y negro puros con bordes gruesos, para atender a pleno sol o con poca vista. Se activa solo si el teléfono tiene "aumentar contraste".
+- **Leer en voz alta** el total y el vuelto ("Vuelto: 25 soles. Da un billete de 20 soles y una moneda de 5 soles"). Usa la voz del teléfono; si no tiene voz en español, la app sigue igual.
+- **Modo ayudante** (para los hijos o un ayudante): solo se vende en efectivo o Yape, sin cambiar precios, sin rebajas ni fiado, y el menú queda cerrado. **Para salir se pide el código de dueño.** Las ventas del ayudante quedan marcadas.
+
+Además, para todos: letra Atkinson Hyperlegible (hecha para personas con baja visión), textos y fondos con contraste AAA (7:1 o más), el texto de los productos nunca va encima de la foto, "Agotado" escrito (no solo apagado), íconos con palabras en el menú, y una búsqueda que entiende errores ("arros" encuentra arroz). El estudio completo con las fuentes está en [`docs/ESTUDIO-UX.md`](docs/ESTUDIO-UX.md).
 
 <br clear="right">
 
@@ -381,5 +401,6 @@ Están en [`mi-bodega-handoff/CLAUDE.md`](mi-bodega-handoff/CLAUDE.md). Las prin
 | 6a | Copia de seguridad cifrada con recordatorio semanal | ✅ |
 | 6b | Impresión directa por Bluetooth (ESC/POS) | Pendiente (opcional) |
 | 6c | Sincronización por Wi-Fi entre la PC y los celulares (como Canvas de Citas) | ✅ |
+| — | Fácil de ver y de usar: letra grande, modo Sol, vuelto dibujado, voz y modo ayudante | ✅ |
 
 Decisiones tomadas y propuestas abiertas: [`PLAN.md`](PLAN.md).
