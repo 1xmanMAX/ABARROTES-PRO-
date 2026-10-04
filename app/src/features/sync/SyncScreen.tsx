@@ -7,6 +7,7 @@ import { Button } from '../../ui/Button';
 import { ScreenHeader } from '../../ui/ScreenHeader';
 import s from '../../ui/Screen.module.css';
 import { toast } from '../../ui/toast';
+import { NexoPanel } from './NexoPanel';
 import styles from './Sync.module.css';
 
 export function ago(at: number, now = Date.now()): string {
@@ -17,8 +18,30 @@ export function ago(at: number, now = Date.now()): string {
   return formatDateTime(at);
 }
 
-/** Sincronizar con la PC: en la PC muestra el QR; en el celular, vincular y el estado. */
+/**
+ * Sincronizar: primero el grupo de aparatos (Nexo); debajo, el vínculo con la PC por QR como
+ * respaldo. Sin copia local (la versión web), solo el vínculo.
+ */
 export function SyncPanel({ onLinked }: { onLinked?: () => void }) {
+  const withNexo = Boolean(pcInfo) || isAndroid;
+  if (!withNexo) return <LinkPanel onLinked={onLinked} />;
+  return (
+    <>
+      <h2 className={styles.heading}>{t.nexo.title}</h2>
+      <NexoPanel />
+      <details className={`${s.card} ${styles.backup}`}>
+        <summary>{t.sync.backupTitle}</summary>
+        <div className={styles.section}>
+          <p className={s.muted}>{t.sync.backupHint}</p>
+          <LinkPanel onLinked={onLinked} />
+        </div>
+      </details>
+    </>
+  );
+}
+
+/** El vínculo con la PC por QR: en la PC muestra el QR; en el celular, vincular y el estado. */
+function LinkPanel({ onLinked }: { onLinked?: () => void }) {
   const st = useSync();
   const [pasted, setPasted] = useState('');
   const [, tick] = useState(0);

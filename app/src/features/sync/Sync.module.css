@@ -62,3 +62,77 @@
   color: var(--ink-soft);
   text-align: right;
 }
+.error {
+  color: var(--danger);
+}
+/* Código del grupo: grande y espaciado, para dictarlo o copiarlo en otro aparato. */
+.groupCode {
+  text-align: center;
+  padding: 14px 10px;
+  border: 3px dashed var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.groupCode strong {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: clamp(1.75rem, 9vw, 2.5rem);
+  letter-spacing: 0.08em;
+  user-select: all;
+}
+.joinInput {
+  font-family: var(--font-mono);
+  font-size: 1.375rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+}
+.member {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--paper-line);
+}
+.member:last-child {
+  border-bottom: none;
+}
+.member > div {
+  flex: 1;
+  min-width: 0;
+}
+.member small {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+}
+.dot {
+  flex: 0 0 auto;
+  font-size: 1.125rem;
+}
+.memberRemove {
+  min-height: 44px;
+  padding: 0 14px;
+  border: var(--border-w) solid var(--danger);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--danger);
+  font-weight: 700;
+}
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.backup summary {
+  cursor: pointer;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  font-weight: 800;
+}
+.heading {
+  margin: 4px 0 0;
+  font-size: 1.375rem;
+  font-weight: 800;
+}

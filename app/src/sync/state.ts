@@ -1,16 +1,18 @@
 /**
- * La sincronización con la PC vista desde la app: estado para la pantalla, el código de
- * vinculación, este aparato dentro del grupo y la sincronización automática. Adaptado de
- * Canvas de Citas (app/src/lib/sincro-app.svelte.js).
+ * La sincronización vista desde la app: estado para la pantalla, el grupo de aparatos (Nexo), el
+ * vínculo con la PC por QR (respaldo) y la sincronización automática. Adaptado de Canvas de Citas
+ * (app/src/lib/sincro-app.svelte.js).
  *
- * En la PC, mi-bodega.exe inyecta `window.miBodegaPc` = { codigo, codigoLocal, qr }: la app de la
- * PC se sincroniza con su propio servidor (127.0.0.1) y muestra el QR para el celular.
+ * Cada aparato tiene su "copia local": en la PC, mi-bodega.exe (inyecta `window.miBodegaPc` =
+ * { codigo, codigoLocal, qr }); en el APK, la copia nativa que arranca NodoPlugin.java. La app se
+ * sincroniza con su copia local por /sync/v2 y Nexo, dentro de esa copia, la sincroniza con los
+ * demás aparatos del grupo. El vínculo por QR con la PC sigue funcionando como respaldo.
  */
 import { Capacitor, registerPlugin } from '@capacitor/core';
 import { create } from 'zustand';
 import { refreshStats } from '../app/stats';
 import { rebuildStats } from '../db/stats';
-import { synchronize, type SyncSummary } from './client';
+import { synchronize, type LocalStore, type SyncSummary } from './client';
 import { connect, findPc, parseCode, SyncHttpError, type Device, type GroupMember } from './http';
 import { getMeta, localStore, onLocalChange, setMeta } from './local';
 
@@ -24,14 +26,42 @@ export const isAndroid = Capacitor.isNativePlatform() && Capacitor.getPlatform()
 
 /** Plugin propio del APK (VinculoPlugin.java): escanea el QR de la PC. */
 const Vinculo = registerPlugin<{ escanear(): Promise<{ codigo: string }> }>('Vinculo');
+/** Plugin propio del APK (NodoPlugin.java): la copia local con Nexo. */
+const Nodo = registerPlugin<{ iniciar(): Promise<{ codigo: string }> }>('Nodo');
 
 export interface LastSync extends Omit<SyncSummary, 'group'> {
   at: number;
 }
 
+export interface NexoMember {
+  id: string;
+  nombre: string;
+  yo: boolean;
+  aLaVista: boolean;
+}
+
+/** Lo que responde la copia local en /sync/nexo/estado. */
+export interface NexoStatus {
+  activo: boolean;
+  error?: string | null;
+  enGrupo?: boolean;
+  codigo?: string | null;
+  yo?: string;
+  miembros?: NexoMember[];
+  direccion?: string | null;
+  ultimaSincro?: number | null;
+  ultimoError?: string | null;
+  etiqueta: string;
+}
+
 interface SyncState {
   loaded: boolean;
+  /** Vínculo con la PC por QR (respaldo). En la PC es su propia copia. */
   code: string;
+  /** Copia local de este aparato (con Nexo), si la tiene. */
+  node: string;
+  nexo: NexoStatus | null;
+  nexoBusy: boolean;
   device: Device | null;
   last: LastSync | null;
   group: GroupMember[];
@@ -43,6 +73,9 @@ interface SyncState {
 export const useSync = create<SyncState>(() => ({
   loaded: false,
   code: '',
+  node: '',
+  nexo: null,
+  nexoBusy: false,
   device: null,
   last: null,
   group: [],
@@ -72,9 +105,32 @@ export function loadSync(): Promise<void> {
       device = { id: `ap_${rnd}`, name: defaultName() };
       await setMeta('device', device);
     }
-    useSync.setState({ loaded: true, code: pcInfo ? pcInfo.codigoLocal : (code ?? ''), last: last ?? null, group: group ?? [], device });
+    useSync.setState({
+      loaded: true,
+      code: pcInfo ? pcInfo.codigoLocal : (code ?? ''),
+      node: pcInfo ? pcInfo.codigoLocal : '',
+      last: last ?? null,
+      group: group ?? [],
+      device,
+    });
   })();
   return loading;
+}
+
+/** Arranca la copia local del APK (una vez). Sin ella (versión web o APK viejo) no hay Nexo. */
+let nodeStart: Promise<void> | null = null;
+export function startNode(): Promise<void> {
+  nodeStart ??= (async () => {
+    if (!isAndroid) return;
+    try {
+      const { codigo } = await Nodo.iniciar();
+      parseCode(codigo);
+      useSync.setState({ node: codigo });
+    } catch (e) {
+      useSync.setState({ nexo: { activo: false, error: String((e as Error)?.message ?? e), etiqueta: '' } });
+    }
+  })();
+  return nodeStart;
 }
 
 async function saveCode(code: string) {
@@ -83,12 +139,17 @@ async function saveCode(code: string) {
   await setMeta('code', code.trim());
 }
 
-async function syncWith(code: string) {
+/** La base de cada destino va aparte: la de la copia local no se mezcla con la del vínculo. */
+function storeFor(baseKey: string): LocalStore {
+  return { ...localStore, readBase: async () => (await getMeta('base' + baseKey)) ?? null, saveBase: (d) => setMeta('base' + baseKey, d) };
+}
+
+async function syncWith(code: string, baseKey = '') {
   const { url, key } = parseCode(code);
   const connection = await connect({ url, key });
   return synchronize({
     connection,
-    store: localStore,
+    store: storeFor(baseKey),
     device: useSync.getState().device!,
     onProgress: (progress) => useSync.setState({ progress }),
   });
@@ -104,30 +165,63 @@ function canScan(silent: boolean) {
   return true;
 }
 
+/** Con la PC por QR: si no responde, quizá cambió de IP → se busca en la red y se reintenta. */
+async function syncWithPc(code: string, silent: boolean): Promise<SyncSummary> {
+  try {
+    return await syncWith(code);
+  } catch (e) {
+    if (!(e instanceof SyncHttpError && e.network) || !canScan(silent)) throw e;
+    useSync.setState({ progress: 'Buscando la PC en la red…' });
+    const found = await findPc({ code, onProgress: (progress) => useSync.setState({ progress }) });
+    if (!found) throw e;
+    await saveCode(found);
+    return syncWith(found);
+  }
+}
+
+/** Etiqueta de la copia local tras la última sincronización: si cambia, Nexo trajo algo. */
+let nodeSeen = '';
+
 let again = false;
-/** Sincroniza con la PC. `silent`: automática, sin error visible si la PC no está en la red. */
+/**
+ * Sincroniza: primero con la copia local (Nexo la lleva a los demás aparatos del grupo) y luego
+ * con la PC vinculada por QR, si la hay. `silent`: automática, sin error visible si la PC no
+ * está en la red.
+ */
 export async function syncNow({ silent = false } = {}): Promise<SyncSummary | null> {
   await loadSync();
+  await startNode();
   const s = useSync.getState();
-  if (!s.code) return null;
+  const nodeOnly = s.node && s.node !== s.code ? s.node : '';
+  if (!s.code && !nodeOnly) return null;
   if (s.busy) {
     again = true;
     return null;
   }
   useSync.setState({ busy: true, error: '' });
+  let result: SyncSummary | null = null;
+  const add = (r: SyncSummary) => {
+    result = result ? { ...r, conflicts: result.conflicts + r.conflicts, sent: result.sent + r.sent, received: (result.received ?? 0) + (r.received ?? 0) } : r;
+  };
   try {
-    let r: SyncSummary;
-    try {
-      r = await syncWith(s.code);
-    } catch (e) {
-      // Sin respuesta: quizá la PC cambió de IP → se busca en la red y se reintenta.
-      if (!(e instanceof SyncHttpError && e.network) || !canScan(silent)) throw e;
-      useSync.setState({ progress: 'Buscando la PC en la red…' });
-      const found = await findPc({ code: s.code, onProgress: (progress) => useSync.setState({ progress }) });
-      if (!found) throw e;
-      await saveCode(found);
-      r = await syncWith(found);
+    if (nodeOnly) {
+      const r = await syncWith(nodeOnly, '-nodo');
+      nodeSeen = r.etiqueta ?? '';
+      add(r);
     }
+    if (s.code) {
+      try {
+        const r = await syncWithPc(s.code, silent);
+        if (s.code === s.node) nodeSeen = r.etiqueta ?? '';
+        add(r);
+      } catch (e) {
+        // Con Nexo andando, que la PC del vínculo viejo no esté no es un error que mostrar.
+        if (!nodeOnly) throw e;
+        if (!(silent || (e instanceof SyncHttpError && e.network))) useSync.setState({ error: (e as Error).message });
+      }
+    }
+    const r = result as SyncSummary | null;
+    if (!r) return null;
     const { group, ...summary } = r;
     const last = { at: Date.now(), ...summary };
     useSync.setState({ last, group });
@@ -181,8 +275,55 @@ export async function unlink(): Promise<void> {
   await Promise.all([setMeta('code', ''), setMeta('last', null), setMeta('base', null)]);
 }
 
+// --- Grupo de aparatos (Nexo) ---
+
+async function nodeConnection() {
+  await loadSync();
+  await startNode();
+  const node = useSync.getState().node;
+  if (!node) throw new Error(useSync.getState().nexo?.error ?? 'Este aparato no tiene sincronización entre aparatos.');
+  const { url, key } = parseCode(node);
+  return connect({ url, key });
+}
+
+/** Lee el estado del grupo; si la copia local cambió (Nexo trajo algo), sincroniza. */
+export async function refreshNexo({ syncIfChanged = true } = {}): Promise<NexoStatus | null> {
+  try {
+    const c = await nodeConnection();
+    const st = (await c.nexo!('estado', {})) as NexoStatus;
+    useSync.setState({ nexo: st });
+    if (syncIfChanged && nodeSeen && st.etiqueta && st.etiqueta !== nodeSeen && !useSync.getState().busy) void syncNow({ silent: true });
+    return st;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Una orden del grupo: `crear`, `unirse` ({codigo, ip?}), `expulsar` ({id}), `renovar`, `salir`,
+ * `sincronizar`. Antes se guarda aquí lo último (así viaja al grupo) y después se trae lo nuevo.
+ */
+export async function nexoOrder(orden: string, datos: Record<string, string> = {}): Promise<Record<string, unknown>> {
+  useSync.setState({ nexoBusy: true });
+  try {
+    await syncNow({ silent: true });
+    const c = await nodeConnection();
+    const r = (await c.nexo!('orden', { orden, ...datos })) as Record<string, unknown>;
+    if (typeof r.error === 'string') throw new Error(r.error);
+    await refreshNexo({ syncIfChanged: false });
+    // Al entrar a un grupo, lo del grupo llega en unos segundos: se trae en cuanto llega.
+    await syncNow({ silent: true });
+    return r;
+  } finally {
+    useSync.setState({ nexoBusy: false });
+  }
+}
+
 const EVERY = pcInfo ? 60_000 : 5 * 60_000;
 const AFTER_CHANGE = pcInfo ? 3_000 : 10_000;
+/** Con copia local, la sincronización es instantánea (no sale del aparato): más seguido. */
+const AFTER_CHANGE_NODE = 2_000;
+const WATCH_NODE = 4_000;
 let started = false;
 
 /** Sincroniza sola: al abrir, cada pocos minutos, al volver a la app y poco después de un cambio. */
@@ -190,15 +331,21 @@ export async function startAutoSync(): Promise<void> {
   if (started) return;
   started = true;
   await loadSync();
+  await startNode();
   const auto = () => void syncNow({ silent: true });
   auto();
   let pending: ReturnType<typeof setTimeout> | undefined;
   onLocalChange(() => {
-    if (!useSync.getState().code) return;
+    const st = useSync.getState();
+    if (!st.code && !st.node) return;
     clearTimeout(pending);
-    pending = setTimeout(auto, AFTER_CHANGE);
+    pending = setTimeout(auto, st.node ? AFTER_CHANGE_NODE : AFTER_CHANGE);
   });
   setInterval(() => document.visibilityState === 'visible' && auto(), EVERY);
+  // Lo que Nexo trae de otro aparato aparece aquí en segundos (solo mira una etiqueta local).
+  setInterval(() => {
+    if (document.visibilityState === 'visible' && useSync.getState().node) void refreshNexo();
+  }, WATCH_NODE);
   let hiddenAt = 0;
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') hiddenAt = Date.now();

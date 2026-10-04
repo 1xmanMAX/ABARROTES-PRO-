@@ -53,6 +53,7 @@ Chart.js entra en la Fase 5 (Estadísticas), con carga diferida.
 | 6a. Copia de seguridad cifrada + recordatorio semanal | **Hecha, esperando tu OK** |
 | 6b. ESC/POS Bluetooth (opcional) | pendiente |
 | 6c. Sincronización por Wi-Fi PC ⇄ celulares | **Hecha, esperando tu OK** |
+| 6d. Grupo de aparatos con Nexo (celular ⇄ celular ⇄ PC, sin servidor) | **Hecha, falta probar en celulares reales** |
 
 ## Ambigüedades y cómo las resolví (Fase 1)
 
@@ -256,6 +257,42 @@ Basado en el estudio de `docs/ESTUDIO-UX.md` (puntos de venta, niños, baja visi
 11. **Ajustes de accesibilidad no se sincronizan** (`SYNC_SETTINGS` no los incluye): el teléfono del niño puede estar en modo ayudante y la PC no.
 
 Pendiente de probar en el teléfono real: la voz con el modo avión, y que un niño cobre S/ 37 con un billete de S/ 50 sin ayuda.
+
+## Grupo de aparatos con Nexo (pedido del dueño, 2026-10-04)
+
+Nexo es la biblioteca de sincronización P2P del dueño ([THE-WORLD-NEX](https://github.com/1xmanMAX/THE-WORLD-NEX), fijada en `95caa90`). Decisión del dueño: **Nexo + respaldo**. El vínculo anterior por QR con la PC sigue funcionando debajo.
+
+1. **Arquitectura: una "copia local" por aparato.**
+   - Es la misma copia principal que ya tenía la PC (`pc/src/carpeta.rs` + `servidor.rs`).
+   - La app web se sincroniza con su copia por `/sync/v2`, como antes, con la fusión a 3 vías y el recálculo de cachés ya probados.
+   - Nexo, dentro de esa copia, la sincroniza **registro por registro** con los demás aparatos del grupo.
+   - Así casi no cambió la app: el cliente de sincronización es el mismo.
+2. **PC:** `mi-bodega.exe` abre Nexo junto al servidor (`iniciar_nexo`). Rutas nuevas: `/sync/nexo/estado` y `/sync/nexo/orden` (crear, unirse, expulsar, renovar, salir, sincronizar), cifradas con la misma clave.
+3. **Android:** la misma copia y Nexo, compilados como biblioteca nativa (`pc/movil`, `libmibodega_movil.so`) y arrancados por `NodoPlugin.java`.
+   - La copia escucha solo en `127.0.0.1` con un puerto libre.
+   - Para encontrar a los demás usa **NsdManager** (`NsdPuente.java`, adaptado del `DescubrimientoNsd.kt` de Nexo) con MulticastLock. El mDNS en Rust no es confiable en celulares.
+   - En la compilación automática de GitHub, Gradle compila la biblioteca (tarea `compilarNexo`, `app/android/compilar-nexo.sh`, solo con `CI=true`) con `cargo ndk` para `arm64-v8a` y `armeabi-v7a` (unos 9 MB cada una). No hay `x86_64`: solo sirve para emuladores.
+4. **La copia principal ahora vive en memoria** (`Carpeta`): se lee una vez del disco.
+   - La etiqueta de concurrencia es "arranque + generación", no un hash de los archivos.
+   - Lo que llega por Nexo se guarda al disco en tandas, cada segundo.
+   - Nexo escribe tomando el mismo candado que `/sync/v2/escribir`. Un guardado de la app nunca pisa lo que llegó en medio: la app recibe 409 y reintenta.
+5. **Avisos a Nexo:** después de cada guardado de la app se calculan los registros que cambiaron (`nodo::diferencias`) y se avisan uno por uno. Con más de 2000 cambios se usa `revisar()`.
+6. **Fusión en Nexo:** `Fusion3`, campo por campo. Si dos aparatos cambian el mismo campo, gana `updatedAt` mayor. Los cachés (stock, saldos) los vuelve a calcular la app al sincronizar, así que los aparatos convergen.
+7. **La app nota lo nuevo en segundos:** cada 4 s mira la etiqueta de su copia (`refreshNexo`). Si cambió desde su último guardado, sincroniza. Con copia local, también sincroniza 2 s después de cada venta.
+8. **Bases separadas** por destino (`'base'` para el vínculo QR y `'base-nodo'` para la copia del celular), para que no se mezclen.
+9. **Firewall de Windows:** el instalador agrega una regla UDP (Nexo: QUIC 47500 y mDNS), además de la TCP 47482. Lo compilado de Rust va a `%LOCALAPPDATA%\MiBodega\compilacion` (más de 1 GB con Nexo).
+10. **Pruebas:**
+    - Rust: dos aparatos en grupo por la API real, con fusión de cambios simultáneos y expulsión, más un código equivocado.
+    - E2E: dos instancias de `nodo_prueba` y dos navegadores. Uno crea el grupo, el otro se une con el código en minúsculas, recibe los productos y ve la venta del primero.
+
+**Pendiente de probar en celulares reales:**
+- que NSD encuentre a la PC y a otro celular en tu Wi-Fi;
+- que la venta llegue en segundos;
+- que "Sacar" un celular lo deje fuera.
+
+Si el router aísla a los aparatos (red de invitados), no se encuentran. Hay "unirse por dirección", pero las sincronizaciones siguientes también necesitan que se encuentren.
+
+**Límite conocido:** en Android, Nexo corre mientras el proceso de la app vive. Con la app cerrada del todo no sincroniza; lo hace al abrirla. La sincronización en segundo plano con WorkManager queda para después.
 
 ## Propuestas (no implementadas; necesito tu decisión)
 

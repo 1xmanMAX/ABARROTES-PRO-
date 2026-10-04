@@ -22,13 +22,28 @@
 
 ---
 
+## En pocas palabras
+
+| | |
+|---|---|
+| 🏪 **Para quién** | Un puesto de abarrotes por mayor: el dueño, su familia y sus ayudantes |
+| 📱 **Dónde corre** | Celular Android (APK) y PC con Windows o cualquier navegador |
+| ⚡ **Venta típica** | **5 toques**: tres productos, Cobrar y Cobrar sin ticket |
+| 📶 **Internet** | **No hace falta**: todo funciona sin señal |
+| 🔄 **Varios aparatos** | Un **grupo** de celulares y PC que se sincronizan entre ellos por el Wi-Fi, sin servidor |
+| 👀 **Accesible** | Contraste AAA, letra grande, modo Sol, voz y modo ayudante para niños |
+| ✅ **Calidad** | 120 tests de lógica y base de datos, 21 flujos completos en el navegador y 8 tests de Rust |
+
+---
+
 ## Contenido
 
 | | | |
 |---|---|---|
 | 🌟 [Por qué Mi Bodega](#1-por-qué-mi-bodega) | 🛒 [Así se hace una venta](#2-así-se-hace-una-venta) | 📲 [Instalar](#3-instalar) |
-| 🚀 [Primer día](#4-primer-día-paso-a-paso) | 📱 [Todas las funciones](#5-todas-las-funciones) | 👀 [Fácil de ver y de usar](#6-fácil-de-ver-y-de-usar) |
-| 📈 [Ganancias y análisis](#7-ganancias-y-análisis-económico) | 🔒 [Seguridad](#8-seguridad-del-dinero-y-de-los-datos) | 💻 [Para programadores](#9-para-programadores) |
+| 🚀 [Primer día](#4-primer-día-paso-a-paso) | 📱 [Todas las funciones](#5-todas-las-funciones) | 🔄 [Todos tus aparatos en un grupo](#6-todos-tus-aparatos-en-un-grupo) |
+| 👀 [Fácil de ver y de usar](#7-fácil-de-ver-y-de-usar) | 📈 [Ganancias y análisis](#8-ganancias-y-análisis-económico) | 🔒 [Seguridad](#9-seguridad-del-dinero-y-de-los-datos) |
+| 🧠 [Cómo funciona por dentro](#10-cómo-funciona-por-dentro) | 🛣️ [Cómo mejorarla](#11-cómo-mejorarla-hoja-de-ruta) | 💻 [Para programadores](#12-para-programadores) |
 
 ---
 
@@ -51,7 +66,7 @@ El **vuelto sale dibujado** en billetes y monedas. No deja cobrar si falta plata
 <td width="33%" valign="top">
 
 ### 📶 Sin internet
-Todo funciona **sin señal**. El celular y la PC se **sincronizan por Wi-Fi** y la copia de seguridad va **cifrada**.
+Todo funciona **sin señal**. Tus celulares y tu PC forman un **grupo** y se sincronizan entre ellos **por el Wi-Fi**, sin nube. La copia de seguridad va **cifrada**.
 
 </td>
 </tr>
@@ -84,6 +99,26 @@ Ganancia del día después de gastos, **qué producto gana y cuál pierde**, pun
 <p align="center"><img src="docs/presentacion/recorrido.png" alt="Recorrido de una venta: tocar productos, cobrar, dar el vuelto, fiar y ver la ganancia" width="100%"></p>
 
 > **Venta típica:** Arroz → Aceite → Azúcar → **Cobrar** → **Cobrar sin ticket**. Son **5 toques** y ya está registrada, con el stock descontado y la caja al día.
+
+### Qué pasa por dentro al cobrar
+
+```mermaid
+flowchart LR
+    A([🛒 Tocas los productos]) --> B[Ticket del cliente<br/>hasta 6 clientes a la vez]
+    B --> C{Cobrar}
+    C -->|💵 Efectivo| D[Tocas los billetes que te da<br/>y ves el vuelto dibujado]
+    C -->|📱 Yape / Plin| E[Confirmas que llegó el aviso<br/>a TU celular]
+    C -->|📒 Fiado| F[El cliente firma<br/>con su código]
+    D --> G[(Venta registrada<br/>todo junto o nada)]
+    E --> G
+    F --> G
+    G --> H[📦 Baja el stock]
+    G --> I[💰 Sube la caja]
+    G --> J[📈 Ganancia del día]
+    G --> K[🔄 Llega a los otros aparatos]
+```
+
+Todo lo de la derecha ocurre **en una sola operación**. Si algo falla, no se guarda nada a medias, y tocar dos veces "Cobrar" no cobra dos veces.
 
 ---
 
@@ -123,14 +158,6 @@ Crea el acceso directo **Mi Bodega** en el escritorio. Se abre en una ventana de
 <p align="center"><img src="docs/capturas/20-pc.png" width="85%" alt="Versión de PC: cuadrícula grande y ticket a la derecha"></p>
 
 <p align="center"><i>En la PC el ticket queda siempre a la derecha. Escribe el nombre del producto y pulsa <b>Enter</b> para venderlo (por ejemplo: <code>arr</code> + Enter suma un arroz).</i></p>
-
-### 🔄 Celular y PC sincronizados por Wi-Fi
-
-Con el programa de Windows instalado:
-1. En la PC abre **Menú → Sincronizar con la PC**.
-2. En el celular abre **Menú → Sincronizar con la PC → Escanear QR**.
-
-Desde ahí se sincronizan solos: al abrir la app, cada 5 minutos y unos segundos después de cada venta. **No hace falta internet**, solo estar en el mismo Wi-Fi. Si se vendió en los dos a la vez, se juntan todas las ventas y el stock descuenta ambas. La PC guarda un respaldo por día de los últimos 30 días.
 
 <details>
 <summary><b>Diferencias entre Android y PC</b></summary>
@@ -305,7 +332,96 @@ Para **cobrar una deuda**: Clientes y vendedores → la persona → **Cobrar deu
 
 ---
 
-## 6. Fácil de ver y de usar
+## 6. Todos tus aparatos en un grupo
+
+<table>
+<tr>
+<td width="50%"><img src="docs/capturas/26-grupo-creado.png" alt="Grupo creado con su código"></td>
+<td width="50%"><img src="docs/capturas/27-grupo-unido.png" alt="Un celular unido al grupo"></td>
+</tr>
+</table>
+
+Junta tus celulares y tu PC en un **grupo**: todos ven las mismas ventas, productos, fiados y caja. La sincronización la hace **[Nexo](https://github.com/1xmanMAX/THE-WORLD-NEX)**, y funciona así:
+
+1. **En un solo aparato** (el que ya tiene tus datos, por ejemplo la PC): **Menú → Sincronizar aparatos → Crear un grupo nuevo**. Aparece un código como `AXKSV-J57N9`.
+2. **En cada uno de los demás**: **Menú → Sincronizar aparatos**, escribe ese código y toca **Unirme al grupo**. Da igual escribirlo en minúsculas o sin el guion. Un celular nuevo también lo puede hacer desde la primera pantalla.
+3. Listo. Desde ese momento se sincronizan **solos**, segundos después de cada venta.
+
+| | |
+|---|---|
+| 📡 **Sin servidor** | Cada aparato se sincroniza **directo con los demás**: celular con celular, celular con PC. **La PC no tiene que estar prendida.** |
+| 🔍 **Se encuentran solos** | Basta con estar en el **mismo Wi-Fi**. No hace falta internet ni escribir direcciones. |
+| 🤝 **Nada se pierde** | Cada venta viaja por separado. Si dos aparatos cambian el mismo producto a la vez (el precio en uno y el nombre en otro), **se juntan los dos cambios**. El stock suma las ventas de todos. |
+| 🔒 **Seguro** | Todo va cifrado y firmado. El código nunca viaja por la red y solo entran los aparatos que lo saben. |
+| 🚫 **Celular perdido** | Desde cualquier aparato del grupo: **Sacar**, y después **Código nuevo**. Ese celular deja de recibir datos. |
+
+> **Respaldo:** el vínculo anterior (escanear el QR de la PC) sigue funcionando debajo, en **"Vínculo con la PC por QR (respaldo)"**. Úsalo si un aparato todavía no tiene la versión nueva. La PC guarda además un respaldo por día de los últimos 30 días.
+
+### Cómo se conectan
+
+Cada aparato guarda **su propia copia** de los datos. Nexo, dentro de esa copia, la mantiene igual a la de los demás: cada aparato habla **directo** con los otros por el Wi-Fi. No hay un servidor en el medio, ni en internet ni en la PC.
+
+```mermaid
+flowchart LR
+    subgraph C1["📱 Celular del dueño"]
+        direction TB
+        App1["App (APK)"] <--> Copia1["Copia local"]
+        Copia1 --- N1(("Nexo"))
+    end
+    subgraph PC["💻 PC"]
+        direction TB
+        AppPC["App en Comet"] <--> CopiaPC["Copia local<br/>mi-bodega.exe"]
+        CopiaPC --- NexoPC(("Nexo"))
+    end
+    subgraph C2["📱 Celular del ayudante"]
+        direction TB
+        App2["App (APK)"] <--> Copia2["Copia local"]
+        Copia2 --- N2(("Nexo"))
+    end
+    WIFI{{"📶 Wi-Fi de la tienda<br/>sin internet · cifrado"}}
+    N1 <-.-> WIFI
+    NexoPC <-.-> WIFI
+    N2 <-.-> WIFI
+```
+
+### Cómo entra un aparato nuevo
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant P as 💻 PC (ya tiene los datos)
+    participant C as 📱 Celular nuevo
+    P->>P: Crear grupo → muestra el código AXKSV-J57N9
+    C->>C: La persona escribe el código
+    C-->>P: Se encuentran solos en el Wi-Fi
+    C->>P: Demuestra que sabe el código<br/>(SPAKE2: el código nunca viaja)
+    P-->>C: Lo acepta en el grupo (registro firmado)
+    P-->>C: Le pasa todos los datos
+    Note over P,C: Desde ahora se sincronizan solos
+```
+
+### Cómo viaja una venta
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor D as Dueño
+    participant A as 📱 App del celular
+    participant CA as Copia del celular
+    participant CP as Copia de la PC
+    participant B as 💻 App de la PC
+    D->>A: Cobra una venta
+    A->>CA: La guarda (2 segundos después)
+    CA-->>CP: Nexo envía solo lo nuevo, cifrado
+    Note over CA,CP: Si los dos cambiaron el mismo producto,<br/>se juntan los cambios campo por campo
+    B->>CP: ¿Hay algo nuevo? (cada 4 segundos)
+    CP-->>B: Llega la venta
+    B->>B: Recalcula stock y saldos con las ventas de todos
+```
+
+---
+
+## 7. Fácil de ver y de usar
 
 <p align="center"><img src="docs/presentacion/accesible.png" alt="Normal, modo Sol con letra grande, modo oscuro y modo ayudante" width="100%"></p>
 
@@ -328,7 +444,7 @@ La app se diseñó a partir de un **estudio con fuentes académicas** sobre punt
 
 ---
 
-## 7. Ganancias y análisis económico
+## 8. Ganancias y análisis económico
 
 <table>
 <tr>
@@ -376,7 +492,7 @@ Cada indicador tiene su gráfico y un botón **"¿Qué es?"** que lo explica den
 
 ---
 
-## 8. Seguridad del dinero y de los datos
+## 9. Seguridad del dinero y de los datos
 
 | | |
 |---|---|
@@ -414,7 +530,10 @@ En su ficha toca **Cambiar código**. Tú escribes tu código de dueño y la per
 Porque ya se descontó la parte del día de tus gastos fijos. Es normal en días flojos; mira la Rentabilidad de 30 días.
 
 **¿Puedo usarla en dos teléfonos o en el teléfono y la PC?**
-Sí, se sincronizan por Wi-Fi con la PC donde instalaste el programa. Varios celulares pueden vincularse a la misma PC.
+Sí, en todos los que quieras. Crea un **grupo** en uno y únete con su código en los demás (Menú → Sincronizar aparatos). Se sincronizan entre ellos por el Wi-Fi, aunque la PC esté apagada.
+
+**Un aparato del grupo no recibe nada.**
+Revisa que esté en el **mismo Wi-Fi** y con Mi Bodega abierta. Algunos routers de invitados aíslan a los aparatos: usa la red principal. Si sigue sin encontrarlos, en "Unirme al grupo" está la opción de unirse por la **dirección** del otro aparato (aparece al final de su pantalla de Sincronizar).
 
 **¿Cómo imprimo?**
 Al cobrar, toca **Cobrar e imprimir**. También puedes reimprimir desde el Historial o el comprobante.
@@ -426,7 +545,104 @@ No. Instalar el APK nuevo encima conserva todo. Solo desinstalar borra los datos
 
 ---
 
-## 9. Para programadores
+## 10. Cómo funciona por dentro
+
+### Las capas de la app
+
+```mermaid
+flowchart TB
+    UI["🖥️ Pantallas (React)<br/>features/: vender, cobrar, inventario, caja…"]
+    Estado["⚡ Estado del momento (Zustand)<br/>carrito y clientes en espera"]
+    Ops["🧾 Operaciones del negocio (db/)<br/>cobrar, fiar, liquidar, comprar, cerrar caja"]
+    Dom["🧮 Lógica pura (domain/)<br/>dinero, vuelto, predicción, saldos, indicadores"]
+    BD[("💾 Base de datos del aparato<br/>IndexedDB con Dexie")]
+    Sync["🔄 Sincronización (sync/)<br/>fusión a 3 vías y recálculo de stock y saldos"]
+    Copia["📦 Copia local + Nexo (Rust)<br/>pc/src y pc/movil"]
+    UI --> Estado
+    UI -->|lecturas en vivo| BD
+    Estado --> Ops
+    Ops --> Dom
+    Ops -->|una transacción por operación| BD
+    BD <--> Sync
+    Sync <--> Copia
+```
+
+### Los datos
+
+Lo principal del modelo (el detalle está en [`mi-bodega-handoff/docs/DATA_MODEL.md`](mi-bodega-handoff/docs/DATA_MODEL.md)):
+
+```mermaid
+erDiagram
+    PRODUCTO ||--o{ LINEA_DE_VENTA : "se vende en"
+    VENTA ||--|{ LINEA_DE_VENTA : tiene
+    VENTA ||--o| FIRMA : "si es fiado"
+    PRODUCTO ||--o{ MOVIMIENTO_DE_STOCK : "entra y sale"
+    VENTA ||--o{ MOVIMIENTO_DE_CAJA : "mueve la caja"
+    PERSONA ||--o{ MOVIMIENTO_DE_CUENTA : "debe y paga"
+    PERSONA ||--o{ ENTREGA : "recibe mercadería"
+    ENTREGA ||--|{ LINEA_DE_ENTREGA : tiene
+    COMPRA ||--|{ LINEA_DE_COMPRA : tiene
+    PRODUCTO ||--o{ LINEA_DE_COMPRA : "se compra en"
+```
+
+### Las reglas que hacen que los números cuadren
+
+| Regla | Qué significa | Por qué importa |
+|---|---|---|
+| 🪙 **Céntimos enteros** | S/ 18.50 se guarda como `1850` | Nunca hay errores de redondeo en el vuelto ni en los totales |
+| ⚛️ **Todo o nada** | Cada operación del negocio es una sola transacción | Una venta no puede bajar el stock sin registrar la caja |
+| 🗂️ **Nada se borra** | Se **anula** con motivo y fecha | Siempre queda el rastro de lo que pasó |
+| 📸 **Copia del momento** | Cada venta guarda el nombre, el precio y el costo de ese día | Cambiar un precio no altera el historial |
+| ➕ **Stock y saldos se calculan** | Salen de sumar los movimientos, no se escriben a mano | Con varios aparatos, las ventas de todos cuentan |
+| 🔐 **Códigos con huella** | De cada código solo se guarda una huella (PBKDF2) | Nadie puede leer el código de un cliente |
+
+---
+
+## 11. Cómo mejorarla: hoja de ruta
+
+### Lo que ya está
+
+| Fase | Contenido | Estado |
+|---|---|:---:|
+| 1 | Vender, cobrar, inventario, recibo, sin internet | ✅ |
+| 2 | "Siguiente probable" y orden por popularidad | ✅ |
+| 3 | Clientes, código personal, fiado y cobro de deudas con comprobante | ✅ |
+| 4 | Entregas a vendedores y liquidación | ✅ |
+| 5 | Caja, cierre del día, inicio, ganancias y análisis económico | ✅ |
+| 6a | Copia de seguridad cifrada con recordatorio semanal | ✅ |
+| 6c | Sincronización por Wi-Fi entre la PC y los celulares | ✅ |
+| — | Grupo de aparatos con Nexo: celular ↔ celular ↔ PC sin servidor | ✅ (falta probarlo en celulares reales) |
+| — | Fácil de ver y de usar: letra grande, modo Sol, vuelto dibujado, voz y modo ayudante | ✅ |
+
+### Lo que sigue
+
+| Prioridad | Mejora | Para qué | Estado |
+|:---:|---|---|:---:|
+| 🔴 | **Probar el grupo en celulares reales** | Confirmar que los celulares se encuentran en el Wi-Fi de la tienda (NSD) y que la venta llega en segundos | 🔜 Próximo |
+| 🔴 | **Sincronizar con la app cerrada** | Que el celular reciba las ventas aunque la app no esté abierta (Nexo ya trae el trabajo en segundo plano de Android) | 📝 Diseñado |
+| 🟠 | **Impresora térmica Bluetooth** | Imprimir el ticket directo, sin el diálogo de Android (ESC/POS) | ⏳ Pendiente |
+| 🟠 | **Código de cada ayudante** | Que cada ayudante entre con su propio código y ver cuánto vendió cada uno | 💡 Idea |
+| 🟡 | **Qué reponer y cuánto** | Usar las ventas y la rotación para sugerir la compra al proveedor | 💡 Idea |
+| 🟡 | **Escáner de código de barras** | Vender y registrar productos envasados con la cámara | 💡 Idea |
+| 🟡 | **Reportes en PDF o Excel** | Pasarle al contador las ventas, gastos y ganancias del mes | 💡 Idea |
+| ⚪ | **iPhone y Mac** | Nexo ya tiene su paquete para Apple; faltaría la app | 💡 Idea |
+| ⚪ | **Pantalla para el cliente** | Girar el teléfono y mostrarle el total y el vuelto en grande | 💡 Idea |
+
+Las decisiones tomadas y las propuestas abiertas, con su explicación, están en [`PLAN.md`](PLAN.md). El estudio de usabilidad que guió el diseño está en [`docs/ESTUDIO-UX.md`](docs/ESTUDIO-UX.md).
+
+### Cómo ayudar
+
+1. **Prueba la app** en tu teléfono y cuéntanos qué no se entiende o qué falla: abre un [issue](https://github.com/1xmanMAX/ABARROTES-PRO-/issues) con una captura.
+2. **¿Propones una mejora?** Explica el problema del puesto que resuelve (no solo la función), y si es posible, cuántos toques ahorra.
+3. **¿Programas?**
+   - Lee las reglas en [`mi-bodega-handoff/CLAUDE.md`](mi-bodega-handoff/CLAUDE.md).
+   - Agrega tests de lo que cambies: de lógica en `domain/`, de base de datos en `db/` y un flujo en `e2e/`.
+   - Corre `npm test` y `npm run e2e` antes de enviar tu cambio.
+   - Los textos van en español de Perú, en `src/i18n/es-PE.ts`.
+
+---
+
+## 12. Para programadores
 
 <table>
 <tr><td><b>App</b></td><td>React 19 + TypeScript (estricto) + Vite 8</td></tr>
@@ -435,8 +651,9 @@ No. Instalar el APK nuevo encima conserva todo. Solo desinstalar borra los datos
 <tr><td><b>Estado</b></td><td>Zustand (carrito, tickets en espera); lecturas con <code>useLiveQuery</code></td></tr>
 <tr><td><b>Criptografía</b></td><td>WebCrypto: PBKDF2-SHA256, SHA-256, AES-GCM</td></tr>
 <tr><td><b>Android</b></td><td>Capacitor 8 (impresión y voz nativas), compilado por GitHub Actions</td></tr>
-<tr><td><b>PC</b></td><td><code>pc/mi-bodega.exe</code> (Rust): sirve la app, sincroniza por Wi-Fi y la abre en Comet</td></tr>
-<tr><td><b>Tests</b></td><td>Vitest + fake-indexeddb (117), Playwright en teléfono 390×844 y PC 1366×768 (20 flujos)</td></tr>
+<tr><td><b>PC</b></td><td><code>pc/mi-bodega.exe</code> (Rust): sirve la app, guarda la copia principal y la abre en Comet</td></tr>
+<tr><td><b>Sincronización</b></td><td><a href="https://github.com/1xmanMAX/THE-WORLD-NEX">Nexo</a> (Rust, QUIC + mDNS, grupo con SPAKE2 y Ed25519) dentro de la copia local de cada aparato: <code>pc/src/nodo.rs</code> en la PC y <code>pc/movil</code> (biblioteca nativa con NSD) en el APK</td></tr>
+<tr><td><b>Tests</b></td><td>Vitest + fake-indexeddb (120), Playwright en teléfono 390×844 y PC 1366×768 (21 flujos, uno con dos aparatos en grupo) y Rust (8, dos de ellos con Nexo)</td></tr>
 </table>
 
 <details>
@@ -456,7 +673,9 @@ app/
     i18n/es-PE.ts  todos los textos de la interfaz
   e2e/           flujos completos, capturas y portada del README
   android/       proyecto Android (Capacitor)
-pc/              programa de Windows e instalador
+pc/              programa de Windows e instalador; src/nodo.rs une la copia principal con Nexo
+  movil/         la misma copia + Nexo para el APK (biblioteca nativa, NSD de Android)
+  examples/      nodo_prueba: un aparato de prueba para el test de dos aparatos
 docs/            capturas, imágenes de presentación y estudio de usabilidad
 mi-bodega-handoff/  especificación original (SPEC, modelo de datos, diseño)
 PLAN.md          fases, decisiones tomadas y propuestas pendientes
@@ -476,6 +695,11 @@ npm run e2e            # flujos en el navegador
 npm run build && npm run preview   # PWA instalable y offline
 npm run build:android  # copia la web al proyecto Android
 npm run capturas       # regenera las capturas y las imágenes de este README
+
+# Rust (pc/): servidor de la PC, Nexo y la biblioteca del APK
+cd ../pc && cargo test                                   # incluye dos aparatos en grupo
+cargo ndk -t arm64-v8a -P 24 build --release -p mi-bodega-movil
+cargo build --example nodo_prueba && NEXO_PRUEBA=<ruta>/nodo_prueba npx playwright test nexo
 ```
 
 </details>
@@ -483,7 +707,7 @@ npm run capturas       # regenera las capturas y las imágenes de este README
 <details>
 <summary><b>Publicación automática</b></summary>
 
-- **APK:** cada push a `main` o a `claude/**` que toque `app/` corre los tests, compila el APK y lo publica en la release [`apk-latest`](https://github.com/1xmanMAX/ABARROTES-PRO-/releases/tag/apk-latest). Siempre se firma con la misma clave, así las actualizaciones se instalan encima.
+- **APK:** cada push a `main` o a `claude/**` que toque `app/` corre los tests, compila la biblioteca nativa de Nexo (`app/android/compilar-nexo.sh`), arma el APK y lo publica en la release [`apk-latest`](https://github.com/1xmanMAX/ABARROTES-PRO-/releases/tag/apk-latest). Siempre se firma con la misma clave, así las actualizaciones se instalan encima.
 - **Web:** cada push a `main` publica la versión web en GitHub Pages ([`pages.yml`](.github/workflows/pages.yml)).
 - **Reglas del código:** las principales están en [`mi-bodega-handoff/CLAUDE.md`](mi-bodega-handoff/CLAUDE.md):
   - el dinero siempre en céntimos enteros;
@@ -493,20 +717,4 @@ npm run capturas       # regenera las capturas y las imágenes de este README
 
 </details>
 
-### Estado del proyecto
-
-| Fase | Contenido | Estado |
-|---|---|:---:|
-| 1 | Vender, cobrar, inventario, recibo, sin internet | ✅ |
-| 2 | "Siguiente probable" y orden por popularidad | ✅ |
-| 3 | Clientes, código personal, fiado y cobro de deudas con comprobante | ✅ |
-| 4 | Entregas a vendedores y liquidación | ✅ |
-| 5 | Caja, cierre del día, inicio, ganancias y análisis económico | ✅ |
-| 6a | Copia de seguridad cifrada con recordatorio semanal | ✅ |
-| 6c | Sincronización por Wi-Fi entre la PC y los celulares | ✅ |
-| — | Fácil de ver y de usar: letra grande, modo Sol, vuelto dibujado, voz y modo ayudante | ✅ |
-| 6b | Impresión directa por Bluetooth (ESC/POS) | ⏳ Opcional |
-
-Decisiones tomadas y propuestas abiertas: [`PLAN.md`](PLAN.md).
-
-<p align="center"><sub>Hecho para el mercado, en español de Perú 🇵🇪</sub></p>
+<p align="center"><sub>Hecho para el mercado, en español de Perú 🇵🇪 · Sincronización con <a href="https://github.com/1xmanMAX/THE-WORLD-NEX">Nexo</a></sub></p>

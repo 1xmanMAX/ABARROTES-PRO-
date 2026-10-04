@@ -12,7 +12,7 @@
     "e2e": "playwright test",
     "typecheck": "tsc -b",
     "build:android": "npm run build && cap sync android",
-    "capturas": "CAPTURAS=1 playwright test capturas portada --workers=1"
+    "capturas": "CAPTURAS=1 playwright test capturas portada diagramas --workers=1"
   },
   "dependencies": {
     "@capacitor-community/text-to-speech": "^8.0.2",
