@@ -1,0 +1,21 @@
+[package]
+name = "mi-bodega"
+version = "0.1.0"
+edition = "2021"
+description = "Mi Bodega en la PC: abre la app y sincroniza por Wi-Fi con el celular (adaptado de Canvas de Citas)"
+publish = false
+
+[dependencies]
+aes-gcm = "0.10.3"
+base64 = "0.22"
+getrandom = "0.2"
+serde_json = { version = "1.0", features = ["preserve_order"] }
+sha2 = "0.10"
+tiny_http = "0.12"
+qrcode = { version = "0.14", default-features = false, features = ["svg"] }
+
+[dev-dependencies]
+tempfile = "3"
+
+[profile.release]
+strip = true

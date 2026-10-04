@@ -213,6 +213,15 @@ Cada indicador tiene su gráfico y un botón "¿Qué es?" con la explicación si
    - la copia de seguridad se comparte en Android y se descarga en la PC;
    - cada instalación tiene sus propios datos (se pasan con la copia de seguridad).
 
+## Visibilidad y velocidad de atención (pedido del dueño)
+
+1. **Tiles sin foto:** se quitó la letra grande de fondo (casi todos decían "A" y tapaba el nombre). Ahora el nombre va grande arriba (hasta 3 líneas) y el precio abajo, sobre un velo oscuro que asegura el contraste.
+2. **Lo que ya está en el ticket** se ve de un vistazo: borde dorado grueso y la cantidad grande en la esquina.
+3. **Cobrar:** la lista de lo que lleva el cliente ya no se encoge a línea y media; la pantalla se desplaza entera.
+4. **Contraste:** "Siguiente probable" con borde continuo (el punteado se perdía en modo oscuro), "Deshacer" desactivado más visible y pestañas de clientes con borde más marcado.
+5. **PC:** la app usa hasta 1440 px. En Vender, el ticket queda fijo a la derecha. Escribir una letra abre Buscar con esa letra, y Enter agrega el primer resultado con stock.
+6. **Arreglos:** las hojas ya no le quitaban el foco al campo de Buscar (en la PC había que hacer clic para escribir). `ui/Toast.tsx` pasó a `ui/ToastHost.tsx`: en Windows chocaba con `ui/toast.ts` y la app no compilaba.
+
 ## Propuestas (no implementadas; necesito tu decisión)
 
 - **Clave de la copia más larga:** la spec pide cifrar con el código de dueño, que tiene 4 dígitos (10 000 combinaciones). Dentro de la app hay bloqueo por intentos, pero quien robe el archivo puede probar las combinaciones en su computadora. Las 600 000 iteraciones lo vuelven lento (del orden de horas), no imposible. Propongo una **clave de copia aparte, de 6 o más caracteres**, que se pida solo al crear y restaurar copias. El riesgo es que, si el dueño la olvida, no puede restaurar.

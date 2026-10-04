@@ -7,6 +7,11 @@
   padding: 16px max(14px, calc((100% - 760px) / 2));
   padding-bottom: calc(16px + env(safe-area-inset-bottom));
 }
+/* La pantalla se desplaza entera: ningún bloque se encoge (antes la lista de lo que lleva el
+   cliente quedaba en una línea y media). */
+.main > * {
+  flex-shrink: 0;
+}
 .totalBox {
   text-align: center;
   padding: 6px 0;

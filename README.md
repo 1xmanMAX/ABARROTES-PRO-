@@ -39,9 +39,12 @@
 
 Abre **https://1xmanmax.github.io/ABARROTES-PRO-/** en Chrome o Edge. Para tenerla como programa, toca el ícono **Instalar** (⊕) en la barra de direcciones. En el teléfono también se puede: menú ⋮ → **Agregar a pantalla principal**.
 
+**Programa de Windows con Comet (recomendado en la PC):** ejecuta `powershell -ExecutionPolicy Bypass -File pcinstalar-windows.ps1`. Compila la app, la deja en `%LOCALAPPDATA%MiBodega` y crea el acceso directo **Mi Bodega** (escritorio y menú Inicio). La app se abre en una ventana de **Comet** (si no está instalado, en Edge o Chrome), servida por un programa pequeño de la propia PC (`mi-bodega.exe`, unos 6 MB de RAM). Así funciona sin internet desde el primer día y, como comparte los procesos de Comet, casi no suma memoria. Los datos quedan en el perfil de Comet: no borres los "datos de sitios" de `127.0.0.1`.
+
 - Funciona sin internet después de abrirla una vez.
 - En la PC se puede **escribir con el teclado**: montos, cantidades y códigos (Enter = Firmar).
-- La cuadrícula aprovecha la pantalla ancha y muestra más productos a la vez.
+- **Para vender con el teclado**, escribe el nombre del producto: se abre Buscar con lo que escribiste, y **Enter** agrega el primero (por ejemplo `arr` + Enter suma un arroz).
+- La cuadrícula aprovecha la pantalla ancha y muestra más productos a la vez. El **ticket queda siempre visible a la derecha**, con − / + para corregir sin abrir el detalle.
 
 > **Aviso:** cada instalación (APK, PC, Chrome del teléfono) tiene **sus propios datos**. No se sincronizan entre sí. Para pasar los datos de uno a otro, usa la **copia de seguridad**: créala en uno y restáurala en el otro.
 
@@ -323,6 +326,8 @@ app/
     i18n/es-PE.ts  todos los textos de la interfaz
   e2e/           flujos completos en el navegador (y el generador de capturas)
   android/       proyecto Android (Capacitor)
+pc/              mi-bodega.exe (Rust): sirve app/dist en esta PC y la abre en Comet;
+                 instalar-windows.ps1 la instala con acceso directo
 mi-bodega-handoff/  especificación original: SPEC, modelo de datos, diseño, mockups
 PLAN.md          fases, decisiones tomadas y propuestas pendientes
 docs/capturas/   imágenes de este README

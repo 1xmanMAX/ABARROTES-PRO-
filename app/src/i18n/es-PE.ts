@@ -65,6 +65,8 @@ export const t = {
     bigDiscount: (amount: string) => `Rebaja de ${amount} por unidad. Toca otra vez para confirmar.`,
     resetPrice: 'Precio normal',
     each: 'c/u',
+    panelEmpty: 'Toca un producto o escribe su nombre para buscarlo.',
+    panelTotal: 'Total',
   },
   checkout: {
     title: (label: string) => `Cobrar · ${label}`,

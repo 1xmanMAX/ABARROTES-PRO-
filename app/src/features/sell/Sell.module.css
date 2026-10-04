@@ -42,7 +42,7 @@
   height: var(--tap-min);
   padding: 0 12px;
   flex-shrink: 0;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.45);
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--cover-ink);
@@ -72,13 +72,82 @@
   opacity: 0.35;
 }
 
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+}
 .main {
   flex: 1 1 auto;
+  min-width: 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 12px 14px;
+}
+
+/* PC: ticket fijo a la derecha. */
+.panel {
+  width: 340px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border-left: 1px solid var(--paper-line);
+  background: var(--surface);
+  min-height: 0;
+}
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: var(--tap-min);
+}
+.panelTitle {
+  font-weight: 800;
+  font-size: 17px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.panelClear {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--brick);
+  font-weight: 700;
+  font-size: 13px;
+}
+.panelLines {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.panelEmpty {
+  margin: 24px 8px;
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.4;
+}
+.panelTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-top: 2px solid var(--paper-line);
+  padding-top: 10px;
+  font-weight: 700;
+}
+.panelTotal .mono {
+  font-size: 24px;
 }
 .gridArea {
   flex: 1 1 auto;
@@ -112,8 +181,11 @@
   opacity: 0.35;
   filter: grayscale(0.7);
 }
+/* Lo que ya está en el ticket tiene que verse de un vistazo: borde grueso y cantidad grande. */
 .tileSelected {
-  box-shadow: 0 0 0 3px var(--gold) inset;
+  box-shadow:
+    0 0 0 4px var(--gold) inset,
+    0 0 0 6px var(--cover-dark) inset;
 }
 .tilePhoto {
   position: absolute;
@@ -123,34 +195,23 @@
   object-fit: cover;
   pointer-events: none;
 }
-.tileInitial {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 34px;
-  color: rgba(255, 255, 255, 0.5);
-  pointer-events: none;
-}
 .tileCount {
   position: absolute;
-  top: 6px;
-  right: 6px;
+  top: 0;
+  right: 0;
   z-index: 1;
-  background: var(--cover-dark);
-  color: var(--gold);
+  background: var(--gold);
+  color: var(--cover-dark);
   font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 13px;
-  min-width: 26px;
-  height: 26px;
-  border-radius: 13px;
+  font-weight: 800;
+  font-size: 18px;
+  min-width: 38px;
+  height: 34px;
+  border-radius: 0 var(--radius-lg) 0 var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 6px;
+  padding: 0 8px;
 }
 .tileLabel {
   position: relative;
@@ -170,7 +231,38 @@
 .tilePrice {
   display: block;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-weight: 600;
+  font-size: 12px;
+}
+/* Sin foto: nombre grande arriba y precio abajo, sobre un velo que asegura el contraste. */
+.tileNoPhoto .tileLabel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 9px 9px 8px;
+  background: linear-gradient(to bottom, rgba(15, 20, 13, 0.55), rgba(15, 20, 13, 0.25) 55%, rgba(15, 20, 13, 0.7));
+}
+.tileNoPhoto .tileName {
+  font-size: 14px;
+  line-height: 1.18;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+.tileNoPhoto .tilePrice {
+  font-size: 13px;
+}
+/* Con cantidad, el nombre deja libre la esquina del contador. */
+.tileSelected.tileNoPhoto .tileName {
+  padding-right: 34px;
+}
+@media (min-width: 700px) {
+  .tileNoPhoto .tileName {
+    font-size: 15px;
+  }
 }
 .searchTile {
   aspect-ratio: 1 / 1;
@@ -229,7 +321,8 @@
   font-size: 12px;
 }
 .undoBtn:disabled {
-  opacity: 0.4;
+  opacity: 0.6;
+  color: var(--ink-soft);
 }
 
 .checkoutBar {
@@ -309,6 +402,9 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+.searchFirst {
+  border: 2px solid var(--gold);
 }
 .searchRow:disabled {
   opacity: 0.45;
@@ -449,12 +545,12 @@
 }
 .chip {
   height: 48px;
-  border: 1.5px dashed var(--gold);
+  border: 2px solid var(--gold);
   border-radius: var(--radius-md);
   background: var(--surface);
   color: var(--ink);
   font-weight: 700;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.15;
   padding: 0 6px;
   display: flex;

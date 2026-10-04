@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { ReceiptPrinter } from '../print/Receipt';
-import { ToastHost } from '../ui/Toast';
+import { ToastHost } from '../ui/ToastHost';
 import { SellScreen } from '../features/sell/SellScreen';
 import { CheckoutScreen } from '../features/sell/CheckoutScreen';
 import { useSell } from '../features/sell/sellStore';

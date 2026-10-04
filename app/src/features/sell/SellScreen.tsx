@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useOrderedSellProducts, useProductMap, useProducts, useSettings } from '../../app/data';
 import { Menu } from '../../app/Menu';
-import { useNav } from '../../app/nav';
+import { currentRoute, useNav } from '../../app/nav';
 import { cartItemCount, cartTotal, reservedByProduct } from '../../domain/cart';
 import { formatQty, unitStep } from '../../domain/qty';
 import { seedDemo } from '../../db/seed';
@@ -23,6 +23,7 @@ import { ProductGrid } from './ProductGrid';
 import { RenameSheet } from './RenameSheet';
 import { SearchSheet } from './SearchSheet';
 import { SuggestionRow } from './SuggestionRow';
+import { TicketPanel } from './TicketPanel';
 import { activeTicket, useSell } from './sellStore';
 import { TicketTabs, type TabInfo } from './TicketTabs';
 import styles from './Sell.module.css';
@@ -30,10 +31,30 @@ import styles from './Sell.module.css';
 type Overlay =
   | { kind: 'none' }
   | { kind: 'menu' }
-  | { kind: 'search' }
+  | { kind: 'search'; query: string }
   | { kind: 'cart' }
   | { kind: 'edit'; productId: string }
   | { kind: 'rename'; ticketId: string };
+
+/** PC o tablet apaisada: el ticket va fijo al lado de la cuadrícula. */
+const WIDE = '(min-width: 1100px)';
+function useWide(): boolean {
+  const [wide, setWide] = useState(() => window.matchMedia(WIDE).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(WIDE);
+    const onChange = () => setWide(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  return wide;
+}
+
+/** Una letra suelta (sin Ctrl/Alt) que no se está escribiendo en un campo. */
+function isTypingLetter(e: KeyboardEvent): boolean {
+  if (e.ctrlKey || e.metaKey || e.altKey || e.key.length !== 1 || !/\p{L}/u.test(e.key)) return false;
+  const target = e.target as HTMLElement | null;
+  return !(target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable));
+}
 
 /** Disponible para agregar = stock − lo reservado en TODOS los tickets abiertos. */
 function availableNow(p: Product): number {
@@ -49,6 +70,20 @@ export function SellScreen() {
   const settings = useSettings();
   const [overlay, setOverlay] = useState<Overlay>({ kind: 'none' });
   const close = useCallback(() => setOverlay({ kind: 'none' }), []);
+  const wide = useWide();
+  const onSellScreen = useNav((s) => currentRoute(s).name === 'sell');
+
+  // PC: escribir el nombre de un producto abre "Buscar" con esa letra (sin tocar el mouse).
+  useEffect(() => {
+    if (!onSellScreen || overlay.kind !== 'none' || products.length === 0) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (!isTypingLetter(e)) return;
+      e.preventDefault();
+      setOverlay({ kind: 'search', query: e.key });
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onSellScreen, overlay.kind, products.length]);
 
   const tickets = useSell((s) => s.tickets);
   const activeId = useSell((s) => s.activeId);
@@ -167,6 +202,7 @@ export function SellScreen() {
         />
       </SellHeader>
 
+      <div className={styles.body}>
       <main className={styles.main}>
         <SuggestionRow products={suggestions} onTap={onTap} />
         <ProductGrid
@@ -175,7 +211,7 @@ export function SellScreen() {
           available={available}
           onTap={onTap}
           onLongPress={onLongPress}
-          onSearch={() => setOverlay({ kind: 'search' })}
+          onSearch={() => setOverlay({ kind: 'search', query: '' })}
         />
         <MultiplierBar
           state={multiplier}
@@ -184,6 +220,19 @@ export function SellScreen() {
           onUndo={actions.undo}
         />
       </main>
+      {wide && (
+        <TicketPanel
+          label={active.label}
+          lines={active.lines}
+          products={productMap}
+          available={available}
+          total={total}
+          onSetQty={actions.setLineQty}
+          onEdit={(p) => setOverlay({ kind: 'edit', productId: p.id })}
+          onClear={actions.clear}
+        />
+      )}
+      </div>
 
       <CheckoutBar
         count={count}
@@ -196,6 +245,7 @@ export function SellScreen() {
       {overlay.kind === 'menu' && <Menu onClose={close} />}
       {overlay.kind === 'search' && (
         <SearchSheet
+          initialQuery={overlay.query}
           products={gridProducts}
           available={available}
           onPick={(p) => {

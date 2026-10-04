@@ -15,7 +15,8 @@ export function Sheet({ title, onClose, children, footer }: Props) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);
-    ref.current?.focus();
+    // Sin quitarle el foco a un campo con autoFocus (p. ej. Buscar): así se escribe de inmediato.
+    if (!ref.current?.contains(document.activeElement)) ref.current?.focus();
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
